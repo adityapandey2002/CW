@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Consultancy Wala
+
+**Smart Solutions. Stronger Businesses.**
+
+Marketing website for Consultancy Wala — an e-commerce growth agency helping brands launch, scale and dominate Amazon, Flipkart, Meesho and beyond.
+
+Built with **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS v4** and **Framer Motion**.
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+| Command            | Description                        |
+| ------------------ | ---------------------------------- |
+| `npm run dev`      | Start the development server       |
+| `npm run build`    | Production build (TypeScript check included) |
+| `npm run start`    | Start the production server        |
+| `npm run lint`     | Run ESLint                         |
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+app/
+  layout.tsx          Root layout: fonts, metadata, viewport
+  page.tsx            Home page — composes all sections
+  globals.css         Design tokens, gradients, utilities (Tailwind v4)
+  icon.svg            Site icon
+components/
+  ui/                 Primitives: Button, Card, Input, Label, Select, Textarea
+  header.tsx          Sticky navbar with mobile menu
+  footer.tsx          Site footer
+  logo.tsx            Brand logo (dark/light variants)
+  reveal.tsx          Framer Motion scroll-reveal wrapper
+  section-heading.tsx Shared section heading (eyebrow + title + subtitle)
+  social-icons.tsx    Inline SVG brand icons (WhatsApp, Instagram, LinkedIn)
+  sections/           Page sections: hero, services, about, testimonials, faq, contact
+lib/
+  constants.ts        Single source of truth for site data, services, testimonials, FAQs, stats
+  utils.ts            `cn()` class-merge helper
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Editing Content
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+All site content lives in **`lib/constants.ts`** — site info, phone/WhatsApp/email, services
+(`SERVICE_GROUPS`), testimonials, FAQs and stats. Update that one file to change the copy.
 
-## Deploy on Vercel
+## Design System
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Brand colors: navy, orange, magenta, purple (defined via `@theme` in `app/globals.css`)
+- Signature gradient: `bg-cta-gradient` / `gradient-text`
+- Grid background utility: `bg-grid`
+- Animation: `<Reveal>` wrapper (respects `prefers-reduced-motion`)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Contact / Lead Flow
+
+The contact form is a client component that builds a **pre-filled WhatsApp message**
+(`wa.me/<number>?text=...`) from the submitted fields — no backend required. All fields are
+encoded with `encodeURIComponent` and every external link uses `rel="noopener noreferrer"`.
+
+## Deployment
+
+This is a fully static-friendly site. Deploy to Vercel with a single click:
+
+```bash
+npx vercel
+```
