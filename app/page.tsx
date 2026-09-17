@@ -6,6 +6,7 @@ import { About } from "@/components/sections/about";
 import { Testimonials } from "@/components/sections/testimonials";
 import { Faq } from "@/components/sections/faq";
 import { Contact } from "@/components/sections/contact";
+import { WhatsAppBubble } from "@/components/whatsapp-bubble";
 
 export default function Home() {
   return (
@@ -20,6 +21,7 @@ export default function Home() {
         <Contact />
       </main>
       <Footer />
+      <WhatsAppBubble />
     </>
   );
 }
