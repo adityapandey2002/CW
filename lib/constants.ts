@@ -18,6 +18,7 @@ export const SITE = {
   taglineAlt: "Empowering Brands. Boosting Growth.",
   hero: "Your E-Commerce Growth Partner.",
   coFounder: "Aditya Pandey",
+  url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://consultancywala.com",
   phone: "+91 8601862114",
   phoneHref: "+918601862114",
   whatsappHref:

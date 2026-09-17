@@ -11,6 +11,11 @@ const SOCIALS = [
 
 const FOOTER_SERVICES = SERVICE_GROUPS.flatMap((group) => group.services).slice(0, 6);
 
+const LEGAL_LINKS = [
+  { label: "Privacy Policy", href: "/privacy" },
+  { label: "Terms of Service", href: "/terms" },
+];
+
 export function Footer() {
   return (
     <footer className="bg-navy text-white">
@@ -103,6 +108,21 @@ export function Footer() {
       <div className="border-t border-white/10">
         <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-3 px-5 py-6 text-xs text-white/50 sm:flex-row sm:px-8">
           <p>© {new Date().getFullYear()} Consultancy Wala. All rights reserved.</p>
+          <nav className="flex items-center gap-4" aria-label="Legal">
+            {LEGAL_LINKS.map((link, index) => (
+              <span key={link.href} className="inline-flex items-center gap-4">
+                {index > 0 ? (
+                  <span aria-hidden="true" className="h-1 w-1 rounded-full bg-white/25" />
+                ) : null}
+                <a
+                  href={link.href}
+                  className="text-white/50 transition-colors hover:text-white"
+                >
+                  {link.label}
+                </a>
+              </span>
+            ))}
+          </nav>
           <p>
             Made with <span aria-hidden="true">♥</span> in Patna, India
           </p>
