@@ -23,7 +23,7 @@ export const SITE = {
   phoneHref: "+918601862114",
   whatsappHref:
     "https://wa.me/918601862114?text=Hi%20Consultancy%20Wala%2C%20I%20want%20to%20grow%20my%20e-commerce%20business.",
-  email: "support.consultancywala@gmail.com",
+  email: "adityapandey.adu@gmail.com",
   address: "Kumhrar, Patna, Bihar 800026",
   instagram: "https://instagram.com/consultancywala",
   linkedin: "https://linkedin.com/company/consultancywala",

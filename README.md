@@ -67,6 +67,21 @@ NEXT_PUBLIC_SITE_URL=https://your-domain.com
 
 Defaults to `https://consultancywala.com` when unset.
 
+## Email Setup (Contact Form)
+
+The contact form uses [Resend](https://resend.com) to send email notifications.
+
+1. Sign up at [resend.com](https://resend.com) (free tier: 100 emails/day)
+2. Create an API key at [resend.com/api-keys](https://resend.com/api-keys)
+3. Add to your environment:
+
+```bash
+# .env.local or Vercel env
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+4. Verify your sending domain in Resend (or use the default `onboarding@resend.dev` for testing)
+
 ## Editing Content
 
 All site content lives in **`lib/constants.ts`** — site info, phone/WhatsApp/email, services
@@ -95,7 +110,27 @@ encoded with `encodeURIComponent` and every external link uses `rel="noopener no
 
 ## Deployment
 
-This is a fully static-friendly site. Deploy to Vercel with a single click:
+### Quick Deploy (Vercel)
+
+1. Push code to GitHub
+2. Go to [vercel.com](https://vercel.com) → **Add New Project**
+3. Import your GitHub repo
+4. Set environment variables:
+   - `NEXT_PUBLIC_SITE_URL` = `https://your-domain.com`
+   - `RESEND_API_KEY` = your Resend API key
+5. Click **Deploy**
+
+### Custom Domain (Hostinger DNS)
+
+1. In Vercel: **Project Settings → Domains** → add `your-domain.com`
+2. In Hostinger: **Domains → DNS Zone Editor**
+3. Add DNS records:
+   - **A record** → `@` → `76.76.21.21` (Vercel IP)
+   - **CNAME record** → `www` → `cname.vercel-dns.com`
+4. Wait for DNS propagation (up to 24 hours, usually minutes)
+5. SSL is automatic on Vercel
+
+### Manual Deploy
 
 ```bash
 npx vercel

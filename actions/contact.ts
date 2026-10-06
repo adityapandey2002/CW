@@ -1,5 +1,8 @@
 "use server";
 
+import { Resend } from "resend";
+import { SITE } from "@/lib/constants";
+
 export type ContactFormState = {
   status: "idle" | "success" | "error";
   message?: string;
@@ -15,6 +18,14 @@ export type ContactPayload = {
 };
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function getResend() {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    throw new Error("RESEND_API_KEY is not set");
+  }
+  return new Resend(apiKey);
+}
 
 export async function submitContact(
   _prevState: ContactFormState,
@@ -40,29 +51,38 @@ export async function submitContact(
     return { status: "error", message: "Please enter a valid email address." };
   }
 
-  // TODO: Plug in an email provider here (e.g. Resend or Nodemailer):
-  //   await resend.emails.send({
-  //     from: SITE.email,
-  //     to: SITE.email,
-  //     replyTo: payload.email,
-  //     subject: `New enquiry from ${payload.name}`,
-  //     text: [
-  //       `Name: ${payload.name}`,
-  //       `Email: ${payload.email}`,
-  //       `Phone: ${payload.phone}`,
-  //       `Business: ${payload.businessName}`,
-  //       `Service: ${payload.service}`,
-  //       `Message: ${payload.message}`,
-  //     ].join("\n"),
-  //   });
+  try {
+    const resend = getResend();
 
-  console.log("[Consultancy Wala] New contact enquiry", {
-    ...payload,
-    receivedAt: new Date().toISOString(),
-  });
+    await resend.emails.send({
+      from: `Consultancy Wala <onboarding@resend.dev>`,
+      to: SITE.email,
+      replyTo: payload.email,
+      subject: `New enquiry from ${payload.name}`,
+      text: [
+        `Name: ${payload.name}`,
+        `Email: ${payload.email}`,
+        `Phone: ${payload.phone}`,
+        `Business: ${payload.businessName}`,
+        `Service: ${payload.service}`,
+        `Message: ${payload.message}`,
+      ].join("\n"),
+    });
 
-  return {
-    status: "success",
-    message: "Thanks! Our team will reach out within 24 hours.",
-  };
+    console.log("[Consultancy Wala] New contact enquiry", {
+      ...payload,
+      receivedAt: new Date().toISOString(),
+    });
+
+    return {
+      status: "success",
+      message: "Thanks! Our team will reach out within 24 hours.",
+    };
+  } catch (error) {
+    console.error("[Consultancy Wala] Failed to send contact enquiry", error);
+    return {
+      status: "error",
+      message: "Something went wrong. Please try again or reach us on WhatsApp.",
+    };
+  }
 }
