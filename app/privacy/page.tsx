@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
     "How Consultancy Wala collects, uses and protects your personal information.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {

@@ -2,87 +2,118 @@
 
 import { Resend } from "resend";
 import { SITE } from "@/lib/constants";
+import { maskEmail, maskPhone, validateContactInput } from "@/lib/validation";
 
 export type ContactFormState = {
   status: "idle" | "success" | "error";
   message?: string;
+  /** Field-level errors, so the form can render them next to each input. */
+  fieldErrors?: Partial<Record<"name" | "email" | "phone" | "message", string>>;
 };
 
-export type ContactPayload = {
-  name: string;
-  email: string;
-  phone: string;
-  businessName: string;
-  service: string;
-  message: string;
-};
+let resendClient: Resend | null = null;
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-function getResend() {
+function getResend(): Resend {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) {
+    // Deliberately not surfaced to the user: never leak configuration state.
     throw new Error("RESEND_API_KEY is not set");
   }
-  return new Resend(apiKey);
+  // Cached per instance so we do not rebuild the client on every submission.
+  resendClient ??= new Resend(apiKey);
+  return resendClient;
 }
+
+/**
+ * Sender address.
+ *
+ * Resend only allows `onboarding@resend.dev` to deliver to the account
+ * owner's own address, so a verified domain is required in production. Set
+ * RESEND_FROM_EMAIL (e.g. "Consultancy Wala <hello@consultancywala.com>")
+ * after verifying the domain in the Resend dashboard.
+ */
+function getFromAddress(): string {
+  return (
+    process.env.RESEND_FROM_EMAIL ??
+    `Consultancy Wala <onboarding@resend.dev>`
+  );
+}
+
+const SUCCESS_MESSAGE = "Thanks! Our team will reach out within 24 hours.";
+const GENERIC_ERROR =
+  "Something went wrong on our side. Please try again, or message us on WhatsApp.";
 
 export async function submitContact(
   _prevState: ContactFormState,
   formData: FormData
 ): Promise<ContactFormState> {
-  const payload: ContactPayload = {
-    name: String(formData.get("name") ?? "").trim(),
-    email: String(formData.get("email") ?? "").trim(),
-    phone: String(formData.get("phone") ?? "").trim(),
-    businessName: String(formData.get("businessName") ?? "").trim(),
-    service: String(formData.get("service") ?? "").trim(),
-    message: String(formData.get("message") ?? "").trim(),
+  // Honeypot: a hidden field that only a bot filling every input would
+  // populate. Respond with a success state so the bot gets no signal.
+  const trap = formData.get("company_website");
+  if (typeof trap === "string" && trap.trim() !== "") {
+    console.warn("[Consultancy Wala] Honeypot triggered on contact submission");
+    return { status: "success", message: SUCCESS_MESSAGE };
+  }
+
+  const raw: Record<string, unknown> = {
+    name: formData.get("name"),
+    email: formData.get("email"),
+    phone: formData.get("phone"),
+    businessName: formData.get("businessName"),
+    service: formData.get("service"),
+    message: formData.get("message"),
   };
 
-  if (!payload.name || !payload.email || !payload.phone || !payload.message) {
-    return {
-      status: "error",
-      message: "Please fill in your name, email, phone and message so we can reach you back.",
-    };
+  const result = validateContactInput(raw);
+
+  if (!result.ok) {
+    return { status: "error", message: result.message };
   }
 
-  if (!EMAIL_REGEX.test(payload.email)) {
-    return { status: "error", message: "Please enter a valid email address." };
-  }
+  const { name, email, phone, businessName, service, message } = result.data;
 
   try {
     const resend = getResend();
 
-    await resend.emails.send({
-      from: `Consultancy Wala <onboarding@resend.dev>`,
+    const { error } = await resend.emails.send({
+      from: getFromAddress(),
       to: SITE.email,
-      replyTo: payload.email,
-      subject: `New enquiry from ${payload.name}`,
+      replyTo: email,
+      // `name` is sanitized of control characters by validateContactInput.
+      subject: `New enquiry from ${name}`,
       text: [
-        `Name: ${payload.name}`,
-        `Email: ${payload.email}`,
-        `Phone: ${payload.phone}`,
-        `Business: ${payload.businessName}`,
-        `Service: ${payload.service}`,
-        `Message: ${payload.message}`,
+        `Name: ${name}`,
+        `Email: ${email}`,
+        `Phone: ${phone}`,
+        `Business: ${businessName || "-"}`,
+        `Service: ${service || "-"}`,
+        "",
+        message,
       ].join("\n"),
     });
 
-    console.log("[Consultancy Wala] New contact enquiry", {
-      ...payload,
+    // Resend resolves with { data, error } rather than throwing on API
+    // failures. Ignoring this is how a failed send silently reports success
+    // to the user, so it must be checked explicitly.
+    if (error) {
+      console.error("[Consultancy Wala] Resend rejected contact email", {
+        name: error.name,
+        message: error.message,
+      });
+      return { status: "error", message: GENERIC_ERROR };
+    }
+
+    // Log metadata only. Full PII stays in Resend, not in serverless logs.
+    console.log("[Consultancy Wala] Contact enquiry sent", {
+      email: maskEmail(email),
+      phone: maskPhone(phone),
+      service: service || null,
       receivedAt: new Date().toISOString(),
     });
 
-    return {
-      status: "success",
-      message: "Thanks! Our team will reach out within 24 hours.",
-    };
+    return { status: "success", message: SUCCESS_MESSAGE };
   } catch (error) {
     console.error("[Consultancy Wala] Failed to send contact enquiry", error);
-    return {
-      status: "error",
-      message: "Something went wrong. Please try again or reach us on WhatsApp.",
-    };
+    return { status: "error", message: GENERIC_ERROR };
   }
 }

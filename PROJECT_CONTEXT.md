@@ -45,7 +45,7 @@ Founder-led, ROI-first e-commerce growth agency with transparent pricing, handli
 | 3 | About section with company pillars | Frontend | **Implemented** | 4 pillars: Founder-Led, ROI-First, Transparent Pricing, Zero-to-Scale |
 | 4 | Testimonials | Frontend | **Implemented** | 3 client testimonials with star ratings |
 | 5 | FAQ accordion | Frontend | **Implemented** | 5 FAQs with AnimatePresence |
-| 6 | Contact form with validation | Frontend + Server Action | **Partially implemented** | Validates and logs to console; email sending is TODO |
+| 6 | Contact form with validation | Frontend + Server Action | **Implemented** | `useActionState` + server action; validates, sends email via Resend, honeypot anti-spam |
 | 7 | WhatsApp floating chat button | Frontend | **Implemented** | Links to wa.me with pre-filled message |
 | 8 | WhatsApp pre-filled message from form | Frontend | **Implemented** | Form data encoded into wa.me link |
 | 9 | Sticky header with mobile menu | Frontend | **Implemented** | Hamburger menu for mobile |
@@ -61,7 +61,7 @@ Founder-led, ROI-first e-commerce growth agency with transparent pricing, handli
 | 19 | Dynamic OG image (1200x630) | Backend (generated) | **Implemented** | opengraph-image.tsx |
 | 20 | Scroll-reveal animations | Frontend | **Implemented** | Framer Motion, respects reduced-motion |
 | 21 | Responsive design | Frontend | **Implemented** | Tailwind CSS v4 |
-| 22 | Email notifications for contact form | Backend | **Planned** | TODO in actions/contact.ts |
+| 22 | Email notifications for contact form | Backend | **Implemented** | Resend in `actions/contact.ts`; API-level `error` is checked explicitly |
 | 23 | Database / CMS | Backend | **Planned** | Not implemented; content in constants.ts |
 | 24 | User authentication | Backend | **Planned** | Not implemented |
 | 25 | Admin dashboard | Backend | **Planned** | Not implemented |
@@ -81,9 +81,9 @@ Founder-led, ROI-first e-commerce growth agency with transparent pricing, handli
 3. Client-side validation checks required fields (name, email, phone, message)
 4. Email format validated via regex
 5. Form submits to `submitContact` server action
-6. Server action validates again, logs to console
+6. Server action validates again (length caps, email format, phone digits) and sanitizes control characters
 7. Returns success state: "Thanks! Our team will reach out within 24 hours."
-8. (TODO: Email notification to agency not yet wired)
+8. Sends the enquiry to the agency inbox via Resend; only metadata (masked email/phone) is logged
 
 **Flow C: Visitor reads legal pages**
 1. Visitor clicks "Privacy Policy" or "Terms" in footer
@@ -199,7 +199,7 @@ graph TD
     
     S6 -->|FormData| D[submitContact]
     D -->|console.log| F[Console Output]
-    D -->|TODO: Email| G[Email Provider - Not Wired]
+    D -->|HTTPS API| G[Resend Email API]
     
     E --> E1[sitemap.ts]
     E --> E2[robots.ts]
@@ -459,7 +459,7 @@ type ContactFormState = {
 { "status": "error", "message": "Please enter a valid email address." }
 ```
 
-**Current behavior:** Logs to console only. Email sending is **TODO** (see `actions/contact.ts` line 43).
+**Current behavior:** Sends the enquiry to the agency inbox via Resend. Because the Resend SDK resolves with `{ data, error }` rather than throwing, the returned `error` is checked explicitly so a failed send cannot be reported to the user as success. Logs store metadata only (masked email/phone), never full PII.
 
 ### 7.3 Middleware
 
@@ -552,9 +552,9 @@ type ContactFormState = {
 1. User submits form with name, email, phone, businessName, service, message
 2. Client-side: checks required fields (name, email, phone, message)
 3. Server-side: re-validates, checks email format
-4. On success: logs to console, returns success message
+4. Sends the email via Resend; on success logs metadata only and returns a success message
 5. On failure: returns specific error message
-6. **TODO:** Email notification to agency (Resend/Nodemailer commented out)
+6. Honeypot field `company_website` short-circuits bot submissions before any email is sent
 
 ### 9.2 WhatsApp Integration
 
@@ -574,9 +574,9 @@ type ContactFormState = {
 
 ### 9.5 Notifications
 
-- **Email:** Not implemented (TODO in code)
+- **Email:** Implemented via Resend (sender address from `RESEND_FROM_EMAIL`)
 - **WhatsApp:** Primary communication channel
-- **Console logging:** Current "notification" for contact submissions
+- **Console logging:** Metadata-only audit trail (masked email/phone); not a notification channel
 
 ---
 
@@ -589,7 +589,7 @@ type ContactFormState = {
 | **Instagram** | Social media link | **Implemented** | URL in `constants.ts`, rendered in footer/social icons |
 | **LinkedIn** | Social media link | **Implemented** | URL in `constants.ts`, rendered in footer/social icons |
 | **Vercel** | Deployment platform | **Implied** | README instructs `npx vercel` |
-| **Email (Resend/Nodemailer)** | Contact form notifications | **Planned** | Commented-out code in `actions/contact.ts` |
+| **Email (Resend)** | Contact form notifications | **Implemented** | `actions/contact.ts`; key from `RESEND_API_KEY`, sender from `RESEND_FROM_EMAIL` |
 | **Analytics** | Site analytics | **TBD / Not found in codebase** | No analytics script found |
 | **Maps** | Location display | **TBD / Not found in codebase** | Address is text only |
 | **Payment Gateway** | Payments | **TBD / Not found in codebase** | No payment integration |
@@ -761,17 +761,17 @@ This runs TypeScript type checking and creates an optimized production build in 
 
 | File | Line | Issue |
 |------|------|-------|
-| `actions/contact.ts` | 43 | Email provider not wired (Resend/Nodemailer commented out) |
+| _(none)_ | — | No TODO/FIXME comments remain in the source tree. |
 
 ### 16.2 Incomplete Areas
 
 | Area | Status | Impact |
 |------|--------|--------|
-| Contact form email notifications | **Not implemented** | Agency won't receive email when someone submits the form; only console log |
+| Contact form email notifications | **Implemented** | Sent via Resend; requires a verified sender domain (`RESEND_FROM_EMAIL`) in production |
 | No database | **By design** | Content is hardcoded in `constants.ts`; no CMS for non-technical users |
 | No admin panel | **Not implemented** | All content changes require code edits |
 | No analytics | **Not implemented** | No visibility into traffic, conversions, or user behavior |
-| No rate limiting | **Not implemented** | Contact form vulnerable to spam/abuse |
+| Honeypot only, no rate limiting | **Partial** | `company_website` honeypot + server-side length caps block naive bots; there is still no per-IP rate limit (see Future Enhancements) |
 | No tests | **Not implemented** | No automated quality assurance |
 | No CI/CD | **Not found** | No automated build/deploy pipeline visible in repo |
 
@@ -798,7 +798,7 @@ This runs TypeScript type checking and creates an optimized production build in 
 
 Based on TODOs and code patterns:
 
-1. **Email integration** — Wire up Resend or Nodemailer in `actions/contact.ts` (code already commented as template)
+1. **Verify the sending domain** — Set `RESEND_FROM_EMAIL` to an address on a domain verified in Resend; without it, production delivery fails silently-by-design (the API error is surfaced to the user, but no mail arrives)
 2. **Analytics** — Add Vercel Analytics, Google Analytics, or Plausible for traffic insights
 3. **CMS integration** — Move `constants.ts` content to a headless CMS (Sanity, Contentful) for non-technical editing
 4. **Blog/Resources section** — Add SEO-driven content marketing pages

@@ -12,6 +12,20 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+const WHATSAPP_NUMBER = "918601862114";
+
+const DEFAULT_WHATSAPP_MESSAGE =
+  "Hi Consultancy Wala, I want to grow my e-commerce business.";
+
+/**
+ * Builds a wa.me deep link. The message is always encoded, so caller-supplied
+ * text can never break out of the query string.
+ */
+export function whatsappLink(message?: string): string {
+  const text = message && message.trim() ? message : DEFAULT_WHATSAPP_MESSAGE;
+  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(text)}`;
+}
+
 export const SITE = {
   name: "Consultancy Wala",
   tagline: "Smart Solutions. Stronger Businesses.",
@@ -21,8 +35,7 @@ export const SITE = {
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://consultancywala.com",
   phone: "+91 8601862114",
   phoneHref: "+918601862114",
-  whatsappHref:
-    "https://wa.me/918601862114?text=Hi%20Consultancy%20Wala%2C%20I%20want%20to%20grow%20my%20e-commerce%20business.",
+  whatsappHref: whatsappLink(),
   email: "adityapandey.adu@gmail.com",
   address: "Kumhrar, Patna, Bihar 800026",
   instagram: "https://instagram.com/consultancywala",
@@ -136,6 +149,16 @@ export const SERVICE_GROUPS: ServiceGroup[] = [
   },
 ];
 
+/**
+ * Options for the contact form's "What do you need?" select.
+ *
+ * Derived from SERVICE_GROUPS so the dropdown can never drift from the services
+ * advertised on the page.
+ */
+export const CONTACT_SERVICE_OPTIONS: string[] = [
+  ...SERVICE_GROUPS.flatMap((group) => group.services.map((service) => service.title)),
+  "Something else",
+];
 export const TESTIMONIALS = [
   {
     quote:
