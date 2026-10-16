@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { FAQS, SERVICE_GROUPS, SITE } from "@/lib/constants";
 import "./globals.css";
 
@@ -138,6 +139,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${jakarta.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-white text-navy">
         {children}
+        <Analytics />
         {/*
           A native <script> is correct here, not next/script: JSON-LD is data,
           not executable code. Per the Next.js docs the value must have `<`
