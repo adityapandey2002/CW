@@ -4,194 +4,226 @@
 
 Marketing website for Consultancy Wala — an e-commerce growth agency helping brands launch, scale and dominate Amazon, Flipkart, Meesho and beyond.
 
-Built with **Next.js 16 (App Router)**, **React 19**, **Tailwind CSS v4** and **Framer Motion**.
+[![Next.js](https://img.shields.io/badge/Next.js-16.3.5-black?logo=next.js)](https://nextjs.org)
+[![React](https://img.shields.io/badge/React-19.2.8-61dafb?logo=react)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript)](https://www.typescriptlang.org)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38bdf8?logo=tailwindcss)](https://tailwindcss.com)
 
-## Getting Started
+## Overview
 
-```bash
-npm install
-npm run dev
+Consultancy Wala is a single-page marketing site plus legal pages for an Indian e-commerce growth agency. It presents services (marketplace onboarding, cataloging, PPC, account management, logistics, brand protection, website development, analytics), an about section, testimonials, FAQ, and a contact form. Leads are captured via a validated contact form (server-side) and WhatsApp deep links.
+
+- **Audience:** prospective sellers/brands, existing clients, search engines.
+- **Type:** frontend-only Next.js 16 (App Router) app. No database, no auth.
+
+## Screenshots / Demo
+
+> **Placeholder — no screenshots are committed in this repository yet.**
+> To add them: capture the home page (desktop + mobile), the services section, and the
+> contact form, save the images into `public/` (e.g. `public/screenshots/home.png`), and
+> replace this block with Markdown image links:
+>
+> ```markdown
+> ![Home page](public/screenshots/home.png)
+> ```
+>
+> A live demo URL can be added here once the production deployment is confirmed.
+
+## Features
+
+**Core**
+- Responsive, animated marketing site (hero, services, about, testimonials, FAQ, contact).
+- Mobile navigation menu.
+- Contact form with server-side validation (Next.js Server Action).
+- WhatsApp deep links and floating chat bubble.
+
+**Technical**
+- SEO: metadata, Open Graph/Twitter cards, JSON-LD Organization schema.
+- Generated `sitemap.xml`, `robots.txt`, PWA manifest, OG image.
+- Branded 404 and error boundary pages.
+- Legal pages (Privacy Policy, Terms of Service) with shared shell.
+
+**Security**
+- Server-side input validation and email format check.
+- `rel="noopener noreferrer"` on external links.
+
+## Technology Stack
+
+| Category | Technology |
+|----------|------------|
+| Framework | Next.js 16.3.5 (App Router) |
+| UI | React 19.2.8, Tailwind CSS 4 |
+| Language | TypeScript 5 (strict) |
+| Animation | Framer Motion 13 |
+| Icons | lucide-react |
+| Utilities | clsx, tailwind-merge |
+| Fonts | Plus Jakarta Sans (next/font/google) |
+| Package manager | npm |
+
+See [docs/02-technology-stack.md](docs/02-technology-stack.md).
+
+## Architecture Overview
+
+Static-first server-rendered site. Content is centralized in `lib/constants.ts`; a single Server Action (`actions/contact.ts`) validates and logs contact submissions. No database or authentication.
+
+```mermaid
+flowchart LR
+  Browser --> Next[Next.js App Router]
+  Next --> Home[Home Page]
+  Home --> Sections[Sections]
+  Sections --> Constants[lib/constants.ts]
+  Browser -->|form submit| Action[Server Action]
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
-
-## Scripts
-
-| Command            | Description                        |
-| ------------------ | ---------------------------------- |
-| `npm run dev`      | Start the development server       |
-| `npm run build`    | Production build (TypeScript check included) |
-| `npm run start`    | Start the production server        |
-| `npm run lint`     | Run ESLint                         |
+Details: [docs/04-system-architecture.md](docs/04-system-architecture.md).
 
 ## Project Structure
 
 ```
-app/
-  layout.tsx          Root layout: fonts, metadata, viewport, JSON-LD schema
-  page.tsx            Home page — composes all sections
-  globals.css         Design tokens, gradients, utilities (Tailwind v4)
-  icon.svg            Site icon
-  favicon.ico         Classic favicon
-  robots.ts           Generated robots.txt
-  sitemap.ts          Generated sitemap.xml
-  manifest.ts         Generated PWA manifest
-  opengraph-image.tsx Generated 1200×630 social preview image
-  error.tsx           Client error boundary (Next 16 `retry` API)
-  not-found.tsx       Branded 404 page
-  privacy/page.tsx    Privacy Policy (DPDP Act 2023 aligned)
-  terms/page.tsx      Terms of Service
-actions/
-  contact.ts          `submitContact` server action - validation + Resend delivery
-components/
-  ui/                 Primitives: Button, Card, Input, Label, Select, Textarea
-  header.tsx          Sticky navbar with accessible mobile menu
-  footer.tsx          Site footer (incl. legal links)
-  logo.tsx            Brand logo (dark/light variants)
-  reveal.tsx          Framer Motion scroll-reveal wrapper
-  section-heading.tsx Shared section heading (eyebrow + title + subtitle)
-  social-icons.tsx    Inline SVG brand icons (WhatsApp, Instagram, LinkedIn)
-  legal-page.tsx      Shared shell for legal pages
-  contact-form.tsx    Contact form (React 19 `useActionState`, progressive enhancement)
-  whatsapp-bubble.tsx Floating WhatsApp button
-  sections/           Page sections: hero, services, about, testimonials, faq, contact
-lib/
-  constants.ts        Single source of truth for site data, services, testimonials, FAQs, stats
-  validation.ts       Contact form field limits, sanitising and validation (pure, testable)
-  utils.ts            `cn()` class-merge helper
+app/          # Routes, layouts, metadata routes, global styles
+actions/      # Server Actions
+components/   # UI, sections, primitives
+lib/          # constants (content) + utils (cn)
+public/       # Static assets (currently empty)
+scripts/      # Maintenance tooling (docs validation)
+docs/         # Documentation
 ```
 
-## Configuration
+Full tree: [docs/03-project-structure.md](docs/03-project-structure.md).
 
-Set the production URL before deploying (used by sitemap, robots, manifest and metadata):
+## Prerequisites
+
+- Node.js (version not pinned; use a version supported by Next.js 16).
+- npm.
+
+## Installation and Setup
 
 ```bash
-# .env.local or Vercel env
-NEXT_PUBLIC_SITE_URL=https://your-domain.com
+git clone https://github.com/adityapandey2002/CW.git
+cd CW
+npm install
+# optional: create .env.local with NEXT_PUBLIC_SITE_URL
+npm run dev
 ```
 
-Defaults to `https://consultancywala.com` when unset.
+Open http://localhost:3000.
 
-## Email Setup (Contact Form)
+Database/migrations not applicable. See [docs/11-installation-and-setup.md](docs/11-installation-and-setup.md).
 
-The contact form uses [Resend](https://resend.com) to send email notifications.
+## Environment Variables
 
-1. Sign up at [resend.com](https://resend.com) (free tier: 100 emails/day)
-2. Create an API key at [resend.com/api-keys](https://resend.com/api-keys)
-3. Add to your environment:
+| Variable | Required | Purpose | Default |
+|----------|----------|---------|---------|
+| `NEXT_PUBLIC_SITE_URL` | No | Production URL for sitemap/robots/manifest/metadata | `https://consultancywala.com` |
+
+Never commit real secrets; `.env*` is gitignored. See [docs/10-configuration-and-environment.md](docs/10-configuration-and-environment.md).
+
+## Running the Application
 
 ```bash
-# .env.local or Vercel env
-RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxx
+npm run dev      # development
+npm run build    # production build (TS check)
+npm run start    # production server
+npm run lint     # ESLint
 ```
 
-4. Verify your sending domain in Resend, then set `RESEND_FROM_EMAIL` to an address on
-   that domain. The default `onboarding@resend.dev` sender only works for local testing:
+## API Documentation
 
-## Editing Content
+No REST/GraphQL API. Single Server Action `submitContact`. See [docs/08-api-documentation.md](docs/08-api-documentation.md).
 
-All site content lives in **`lib/constants.ts`** — site info, phone/WhatsApp/email, services
-(`SERVICE_GROUPS`), testimonials, FAQs and stats. Update that one file to change the copy.
+## Database
 
-## Design System
+None. See [docs/07-database-documentation.md](docs/07-database-documentation.md).
 
-- Brand colors: navy, orange, magenta, purple (defined via `@theme` in `app/globals.css`)
-- Signature gradient: `bg-cta-gradient` / `gradient-text`
-- Grid background utility: `bg-grid`
-- Animation: `<Reveal>` wrapper (respects `prefers-reduced-motion`)
-- Legal prose: `.legal-prose` scoped styles for privacy/terms content
+## Testing
 
-## Contact / Lead Flow
+No automated test suite exists. Quality gates:
 
-The contact form uses React 19 `useActionState` with the form's `action` prop, so it submits to the `submitContact`
-server action **and still works before hydration or with JavaScript disabled** (progressive enhancement).
+```bash
+npm run lint                     # ESLint — passes
+npx tsc --noEmit                 # type check — passes
+npm run build                    # production build — passes (9 static routes)
+node scripts/validate-docs.mjs  # docs links/fences/Mermaid — passes
+```
 
-1. Client-side HTML validation marks required fields.
-2. The server action re-validates every field, strips control characters and applies length caps.
-3. The enquiry is emailed to the agency inbox via Resend.
-4. On success the form shows a confirmation plus a **pre-filled WhatsApp message** built from the
-   submitted fields (`wa.me/<number>?text=...`).
-
-All query values are encoded with `encodeURIComponent` via the `whatsappLink()` helper in
-`lib/constants.ts`, and every external link uses `rel="noopener noreferrer"`.
-
-## Security
-
-**Headers** (`next.config.ts` sends these on every route):
-
-| Header | Value |
-|--------|-------|
-| `Content-Security-Policy` | `default-src 'self'`; no third-party script origins, `frame-ancestors 'none'`, `object-src 'none'`, `base-uri 'self'`, `form-action 'self'` |
-| `Strict-Transport-Security` | `max-age=63072000; includeSubDomains; preload` |
-| `X-Content-Type-Options` | `nosniff` |
-| `X-Frame-Options` | `DENY` |
-| `Referrer-Policy` | `strict-origin-when-cross-origin` |
-| `Permissions-Policy` | camera, microphone, geolocation all disabled |
-| `Cross-Origin-Opener-Policy` | `same-origin` |
-
-`X-Powered-By` is disabled via `poweredByHeader: false`.
-
-> **CSP trade-off:** the strict nonce-based policy from the Next.js docs requires
-> dynamic rendering, because a nonce must be minted per request. This site is
-> statically prerendered and depends on organic search, so we keep static
-> rendering and accept `'unsafe-inline'` for scripts and styles instead.
-> That still blocks third-party script origins, framing, plugins, base-tag
-> hijacking and form hijacking. Move to a nonce via `proxy.ts` only if you
-> are willing to give up static rendering.
-
-**Contact form hardening** (`lib/validation.ts` + `actions/contact.ts`):
-
-- Server-side length caps on every field, mirrored as `maxLength` on the inputs
-- Email format and 10-15 digit phone validation; phone normalised to international form
-- Control characters stripped from all input, so user text cannot inject email headers
-  or forge log lines
-- Honeypot field (`company_website`); a filled trap returns a fake success and
-  sends nothing
-- Resend's returned `error` is checked explicitly, because the SDK resolves
-  instead of throwing on API failures
-- Logs store metadata only - the email and phone are masked, so serverless logs do
-  not become a second copy of user PII
-
-**Known gap:** there is **no per-IP rate limiting**. The honeypot and length caps stop
-naive bots, but a determined attacker can still submit repeatedly and consume Resend
-quota (100 emails/day on the free tier). Because serverless functions are stateless,
-in-memory rate limiting does not work on Vercel. To close this properly, add either
-Vercel Firewall rate-limit rules or a CAPTCHA (Cloudflare Turnstile / hCaptcha), both
-of which are enforced at the edge before your function runs.
-
----
-## SEO & Discovery
-
-- `sitemap.xml` and `robots.txt` are generated at build time.
-- Open Graph + Twitter cards resolve against `NEXT_PUBLIC_SITE_URL` via `metadataBase`.
-- The 404 page is `noindex` (Next.js handles this automatically).
-- Organization JSON-LD schema is injected in the root layout.
+See [docs/13-testing-and-quality.md](docs/13-testing-and-quality.md).
 
 ## Deployment
-
-### Quick Deploy (Vercel)
-
-1. Push code to GitHub
-2. Go to [vercel.com](https://vercel.com) → **Add New Project**
-3. Import your GitHub repo
-4. Set environment variables:
-   - `NEXT_PUBLIC_SITE_URL` = `https://your-domain.com`
-   - `RESEND_API_KEY` = your Resend API key
-   - `RESEND_FROM_EMAIL` = verified sender, e.g. `Consultancy Wala <hello@yourdomain.com>`
-5. Click **Deploy**
-
-### Custom Domain (Hostinger DNS)
-
-1. In Vercel: **Project Settings → Domains** → add `your-domain.com`
-2. In Hostinger: **Domains → DNS Zone Editor**
-3. Add DNS records:
-   - **A record** → `@` → `76.76.21.21` (Vercel IP)
-   - **CNAME record** → `www` → `cname.vercel-dns.com`
-4. Wait for DNS propagation (up to 24 hours, usually minutes)
-5. SSL is automatic on Vercel
-
-### Manual Deploy
 
 ```bash
 npx vercel
 ```
+
+Set `NEXT_PUBLIC_SITE_URL` before deploying. See [docs/14-deployment-and-infrastructure.md](docs/14-deployment-and-infrastructure.md).
+
+## Known Gaps
+
+Documented, not fixed (this repository's documentation pass made no application changes):
+
+- Contact form validates and logs enquiries but **sends no email** (TODO in `actions/contact.ts`).
+- No rate limiting or spam protection on the form.
+- `SITE.phoneHref` is missing the `tel:` scheme, so phone links are relative URLs.
+- The root layout's canonical URL is inherited by `/privacy` and `/terms`.
+- No test suite, no CI/CD, no `LICENSE` file.
+
+## Documentation
+
+Full documentation index: [docs/README.md](docs/README.md)
+
+| Document | Topic |
+|----------|-------|
+| [01-project-overview.md](docs/01-project-overview.md) | What the project is and who it serves |
+| [02-technology-stack.md](docs/02-technology-stack.md) | Languages, frameworks, libraries |
+| [03-project-structure.md](docs/03-project-structure.md) | Directory tree and module layout |
+| [04-system-architecture.md](docs/04-system-architecture.md) | Architecture, layers, data flow |
+| [05-application-workflows.md](docs/05-application-workflows.md) | End-to-end workflows |
+| [06-modules-and-features.md](docs/06-modules-and-features.md) | Module-by-module analysis |
+| [07-database-documentation.md](docs/07-database-documentation.md) | Database (none used) |
+| [08-api-documentation.md](docs/08-api-documentation.md) | Server Action and HTTP surface |
+| [09-authentication-and-authorization.md](docs/09-authentication-and-authorization.md) | Auth (none implemented) |
+| [10-configuration-and-environment.md](docs/10-configuration-and-environment.md) | Configuration and env vars |
+| [11-installation-and-setup.md](docs/11-installation-and-setup.md) | Local setup |
+| [12-development-guide.md](docs/12-development-guide.md) | Developer workflow and conventions |
+| [13-testing-and-quality.md](docs/13-testing-and-quality.md) | Testing and linting |
+| [14-deployment-and-infrastructure.md](docs/14-deployment-and-infrastructure.md) | Deployment |
+| [15-security-documentation.md](docs/15-security-documentation.md) | Security posture |
+| [16-error-handling-and-logging.md](docs/16-error-handling-and-logging.md) | Errors and logs |
+| [17-integrations-and-third-party-services.md](docs/17-integrations-and-third-party-services.md) | External integrations |
+| [18-maintenance-and-troubleshooting.md](docs/18-maintenance-and-troubleshooting.md) | Maintenance and troubleshooting |
+| [19-performance-and-scalability.md](docs/19-performance-and-scalability.md) | Performance and scaling |
+| [20-future-improvements.md](docs/20-future-improvements.md) | Future improvements |
+| [AI_AGENT_CONTEXT.md](docs/AI_AGENT_CONTEXT.md) | Context for AI coding agents |
+| [diagrams/](docs/diagrams/system-architecture.md) | Mermaid diagrams |
+
+Validate the docs (links, code fences, Mermaid) with:
+
+```bash
+node scripts/validate-docs.mjs
+```
+
+## Contributing
+
+Proposed guidelines (no existing CONTRIBUTING.md):
+1. Keep changes focused; follow existing TypeScript/Tailwind conventions.
+2. Edit site content in `lib/constants.ts`.
+3. Run `npm run lint` and `npm run build` before committing.
+4. Do not commit secrets or `.env*` files.
+
+## License
+
+No `LICENSE` file present in the repository. License not yet specified.
+
+## Acknowledgements
+
+Built with Next.js, React, Tailwind CSS, Framer Motion, lucide-react.
+
+## Contact and Support
+
+- Phone: +91 8601862114
+- Email: support.consultancywala@gmail.com
+- Address: Kumhrar, Patna, Bihar 800026
+- Repository: https://github.com/adityapandey2002/CW
+
+## Project Status
+
+Private project (`"private": true`), no release tags published. The site builds and runs successfully (`npm run lint`, `npm run build` verified).
