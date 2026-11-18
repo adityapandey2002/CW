@@ -1,24 +1,49 @@
 # 20 — Future Improvements
 
-## Proposed (not implemented)
+## Status of the Original Recommendations
 
-1. **Email delivery** for contact form (Resend/Nodemailer) — replace TODO in `actions/contact.ts`.
-2. **Persistence** of enquiries (database or CRM integration).
-3. **Spam protection** (honeypot, Turnstile/reCAPTCHA).
-4. **Rate limiting** on server action.
-5. **Analytics** (privacy-compliant) with cookie consent update.
-6. **Security headers** (CSP, HSTS) in `next.config.ts`.
-7. **Test suite** (Vitest + Playwright) and CI pipeline.
-8. **Admin/CRM portal** with authentication.
-9. **Image assets** in `public/` and `next/image` usage.
-10. **i18n** if multilingual support needed.
-11. **`.env.example`** for documented env vars.
-12. **Accessibility audit** and reduced-motion consistency in `Reveal`.
-13. **Content management** (CMS) instead of hardcoded constants if non-dev editing needed.
-14. **License** selection and `LICENSE` file.
-15. **Per-page canonical metadata** — verified: the root layout's `alternates.canonical: "/"` is inherited by `/privacy` and `/terms`, so both legal pages advertise the home URL as canonical. Add explicit canonicals per route.
-16. **Dialable phone links** — `SITE.phoneHref` is used verbatim as an `href`, producing relative URLs instead of `tel:` links.
-17. **Client-side error handling** — `ContactForm` has no `try/catch` around `submitContact`; a rejected action leaves the button stuck in the pending state.
-18. **Consistent service taxonomy** — the form's `SERVICE_OPTIONS` (7 items) and `SERVICE_GROUPS` (10 services) are maintained separately; derive one from the other.
+Most items from the original audit are now implemented:
 
-These are suggestions; none are implemented or verified as planned.
+| # | Recommendation | Status |
+|---|----------------|--------|
+| 1 | Email delivery for the contact form (Resend/Nodemailer) | **Done** — Resend, with honeypot, field limits, PII masking, control-char stripping |
+| 2 | Persistence of enquiries | Open — still no database; leads go to email + stdout |
+| 3 | Spam protection (honeypot, Turnstile/reCAPTCHA) | **Partial** — honeypot done; no CAPTCHA |
+| 4 | Rate limiting on the server action | Open — handle at the edge (Vercel/Cloudflare) |
+| 5 | Analytics (privacy-compliant) | Open — a stale Vercel Web Analytics branch exists but is not on `main` |
+| 6 | Security headers (CSP, HSTS) in `next.config.ts` | **Done** |
+| 7 | Test suite (Vitest + Playwright) and CI pipeline | **Partial** — full CI pipeline exists; no automated tests |
+| 8 | Admin/CRM portal with authentication | Open |
+| 9 | Image assets in `public/` and `next/image` | Open |
+| 10 | i18n | Open |
+| 11 | `.env.example` | **Done** |
+| 12 | Accessibility audit + reduced-motion consistency | **Partial** — mobile menu and FAQ improved; `Reveal` already honours reduced motion |
+| 13 | Content management (CMS) | Open |
+| 14 | License selection and `LICENSE` file | Open |
+| 15 | Per-page canonical metadata | **Done** — each route declares its own canonical |
+| 16 | Dialable phone links (`tel:`) | **Done** — `SITE.phoneHref` is `tel:+918601862114` |
+| 17 | Client-side error handling for the contact form | **Done** — Server Action catches failures; `useActionState` clears `pending` |
+| 18 | CI hardening (typecheck, docs, audit, deploy) | **Done** — see `.github/workflows/ci.yml` |
+
+## Still Open (recommended next steps)
+
+1. **Test suite** — add unit tests for `lib/validation.ts` (it is pure and testable) and E2E tests for the contact form.
+2. **Rate limiting** at the network edge (Vercel/Cloudflare) in addition to the honeypot.
+3. **CAPTCHA** if spam becomes a problem.
+4. **Persistence** — a database or CRM if enquiries need to be tracked beyond email.
+5. **License** selection and a `LICENSE` file.
+6. **Image optimisation** — introduce `next/image` when imagery is added.
+7. **Performance budgets / Lighthouse CI** — none defined.
+8. **Monitoring** — error tracker (Sentry), uptime checks, and alerts for repeated action failures.
+9. **Dependency upgrades** — `npm audit` reports advisories; budget time to upgrade within Next.js 16 compatibility.
+10. **Content management** — a CMS or MDX if non-developers need to edit copy.
+
+## Enabling the Vercel Deploy Job
+
+The `deploy` job in `.github/workflows/ci.yml` is opt-in so the pipeline stays green without credentials:
+
+1. Create a Vercel token (Account Settings → Tokens).
+2. Add repository secrets `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`.
+3. Add repository variable `VERCEL_DEPLOY_ENABLED` with value `true`.
+
+Until all three secrets and the variable exist, the job is skipped.

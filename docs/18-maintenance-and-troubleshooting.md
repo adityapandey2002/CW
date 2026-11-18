@@ -5,8 +5,8 @@
 ### Update site copy
 
 1. Edit `lib/constants.ts` — `SITE`, `NAV_LINKS`, `SERVICE_GROUPS`, `TESTIMONIALS`, `FAQS`, `STATS`.
-2. Confirm nothing else hardcodes the same text (e.g., the contact form's `SERVICE_OPTIONS` list is independent of `SERVICE_GROUPS`).
-3. Run `npm run lint` and `npm run build`.
+2. `CONTACT_SERVICE_OPTIONS` is derived from `SERVICE_GROUPS`, so the contact-form dropdown follows automatically.
+3. Run `npm run lint`, `npx tsc --noEmit`, and `npm run build`.
 
 ### Update legal pages
 
@@ -15,6 +15,12 @@
 ### Change brand tokens
 
 - `app/globals.css` → `@theme inline` block (colors, font) and `@utility` blocks (gradients, grid).
+
+### Change email delivery
+
+- Set `RESEND_API_KEY` (and optionally `RESEND_FROM_EMAIL`) in the environment.
+- Verify the sending domain in the Resend dashboard for production delivery.
+- The sender defaults to `Consultancy Wala <onboarding@resend.dev>` (sandbox — only delivers to the account owner).
 
 ### Change the domain
 
@@ -38,13 +44,13 @@
 | `next build` fails: "Turbopack is not supported on this platform" | Native SWC binary missing/invalid for the OS | Reinstall dependencies for the platform, or use Next's suggested fallback `next build --webpack` |
 | Styles missing | Tailwind v4 CSS-first config broken | Verify `@import "tailwindcss"` and `@theme` in `app/globals.css` |
 | Contact form always shows an error | Validation failure | Required: name, email, phone, message; email must match the regex |
-| Form stays in "Sending..." | Server Action threw and there is no `try/catch` in the client | Check server logs; add error handling in `components/contact-form.tsx` |
-| Enquiries not received by email | Email provider not implemented | Implement the TODO in `actions/contact.ts` |
+| Form stays in "Sending..." | Server Action threw | Check server logs; `ContactForm` relies on `useActionState` pending state |
+| Enquiries not received by email | `RESEND_API_KEY` unset, or unverified domain | Set the key in the environment; verify the domain in Resend; check Resend logs |
 | Mobile menu not opening | Client component state/hydration issue | Confirm `"use client"` is present in `components/header.tsx` |
 | Animations ignore reduced motion | `useReducedMotion` usage | `Reveal` and `Faq` handle it; check custom animations |
 | Anchor links land under the fixed header | Header height/scroll offset | `scroll-padding-top: 90px` in `globals.css`; `scroll-mt-20` per section |
-| `/privacy` and `/terms` canonical points to `/` | Root layout sets `alternates.canonical: "/"` (verified for both legal pages) | Add per-page `alternates.canonical` metadata |
-| Phone link does not open the dialer | `SITE.phoneHref` lacks the `tel:` scheme | Prefix with `tel:` in `lib/constants.ts` |
+| `/privacy` and `/terms` canonical points to `/` | **Fixed** — each route declares its own `alternates.canonical` | Verify after a build: canonical should match the route |
+| Phone link does not open the dialer | `SITE.phoneHref` lacks the `tel:` scheme | **Fixed** — now `"tel:+918601862114"` |
 
 ## Backup and Recovery
 

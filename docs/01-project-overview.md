@@ -34,10 +34,24 @@ Supporting pillars (from `components/sections/about.tsx`): Founder-Led, ROI-Firs
 | Backend | None separate; one Server Action (`submitContact`) |
 | Database | None |
 | Authentication | None |
-| Persistence | None — enquiries are logged to stdout |
+| Persistence | None — enquiries are emailed via Resend and logged (masked) to stdout |
 | CMS | None — content is hardcoded in `lib/constants.ts` |
 | Tests | None |
-| CI/CD | None in the repository |
+| CI/CD | GitHub Actions (`.github/workflows/ci.yml`) — lint, build, typecheck |
+
+## Recent Revisions (origin/main)
+
+The repository has since been revised and now includes:
+- **Resend email delivery** in `submitContact` (with honeypot, field limits, control-character stripping, PII masking in logs).
+- **`lib/validation.ts`** — pure, testable validation helpers (`FIELD_LIMITS`, `sanitize`, `isValidPhone`, `normalizePhone`, `validateContactInput`, `maskEmail`, `maskPhone`).
+- **Security headers** in `next.config.ts`: CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, COOP; `poweredByHeader: false`.
+- **Canonical moved** from the root layout to `app/page.tsx`, so `/privacy` and `/terms` no longer inherit `/`.
+- **Richer JSON-LD** (ProfessionalService, WebSite, FAQPage) with `<` escaping via `toJsonLd`.
+- **Accessible mobile menu** (Escape, focus management, scroll lock) and **FAQ accordion** (aria-controls, role="region", crawlable answers).
+- **`CONTACT_SERVICE_OPTIONS`** derived from `SERVICE_GROUPS`; **`whatsappLink()`** helper with `encodeURIComponent`.
+- **GitHub Actions CI** workflow (lint, typecheck, docs validation, build, advisory audit, opt-in Vercel deploy).
+- **`PROJECT_CONTEXT.md`** and **`DEPLOYMENT_GUIDE.md`** (additional, overlapping documentation).
+- Email changed to `adityapandey.adu@gmail.com`.
 
 ## Key Business Facts (from `lib/constants.ts`)
 
@@ -50,7 +64,7 @@ Supporting pillars (from `components/sections/about.tsx`): Founder-Led, ROI-Firs
 | Co-founder | Aditya Pandey |
 | Phone | +91 8601862114 (`tel:+918601862114`) |
 | WhatsApp | `https://wa.me/918601862114?text=...` (pre-filled message) |
-| Email | support.consultancywala@gmail.com |
+| Email | adityapandey.adu@gmail.com |
 | Address | Kumhrar, Patna, Bihar 800026 (JSON-LD: Patna, Bihar, 800026, IN) |
 | Instagram | https://instagram.com/consultancywala |
 | LinkedIn | https://linkedin.com/company/consultancywala |

@@ -3,7 +3,7 @@
 ## 1. Visitor Loads the Home Page
 
 1. Browser requests `GET /`.
-2. Next.js renders `app/layout.tsx`: `Plus_Jakarta_Sans` font variable, viewport (`themeColor #ffffff`, `width=device-width`, `initialScale=1`), metadata (title template `%s | Consultancy Wala`, description, keywords, canonical `/`, OG/Twitter cards, robots `index/follow`, icons), and the Organization JSON-LD script.
+2. Next.js renders `app/layout.tsx`: `Plus_Jakarta_Sans` font variable, viewport (`themeColor #ffffff`, `width=device-width`, `initialScale=1`), metadata (title template `%s | Consultancy Wala`, description, keywords, OG/Twitter cards, robots `index/follow`, icons), and the JSON-LD scripts.
 3. `app/page.tsx` renders `Header`, the six sections, `Footer`, `WhatsAppBubble`.
 4. Content comes from `lib/constants.ts` (`SITE`, `NAV_LINKS`, `SERVICE_GROUPS`, `STATS`, `TESTIMONIALS`, `FAQS`).
 5. The browser hydrates only the client components: `Header`, `Reveal`, `Faq`, `ContactForm`, `WhatsAppBubble`, plus `app/error.tsx` if mounted.
@@ -84,7 +84,7 @@ Details:
 |---------|--------|
 | Unhandled error in a route segment | `app/error.tsx` renders; `console.error` logs it; "Try Again" calls `retry()` |
 | Unknown URL | `app/not-found.tsx` renders branded 404 with Home / Contact links |
-| Client action promise rejects | No `try/catch` in `ContactForm` — UI remains in the pending state (known gap) |
+| Client action promise rejects | The Server Action catches email failures and returns an error state; `useActionState` clears `pending` |
 
 ## 8. SEO / Discovery Flow
 

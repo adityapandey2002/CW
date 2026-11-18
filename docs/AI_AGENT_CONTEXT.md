@@ -11,12 +11,12 @@ Marketing and lead-generation website for **Consultancy Wala**, an e-commerce gr
 
 - Next.js 16 App Router, React 19, server-rendered by default.
 - All site copy in `lib/constants.ts` (single source of truth).
-- One Server Action: `submitContact` in `actions/contact.ts` — validates, logs to stdout, email delivery is a TODO.
+- One Server Action: `submitContact` in `actions/contact.ts` — validates (via `lib/validation.ts`), delivers via Resend, logs masked metadata.
 - No database, no auth, no API, no tests, no CI.
 
 ## Tech Stack
 
-Next.js 16.3.5 · React 19.2.8 · TypeScript 5 (strict) · Tailwind CSS 4 (CSS-first, no `tailwind.config.js`) · Framer Motion 13 · lucide-react 1.46 · clsx + tailwind-merge · npm · ESLint 9 flat config.
+Next.js 16.3.5 · React 19.2.8 · TypeScript 5 (strict) · Tailwind CSS 4 (CSS-first, no `tailwind.config.js`) · Framer Motion 13 · lucide-react 1.46 · clsx + tailwind-merge · Resend 4 · npm · ESLint 9 flat config.
 
 ## Entry Points
 
@@ -34,9 +34,10 @@ Next.js 16.3.5 · React 19.2.8 · TypeScript 5 (strict) · Tailwind CSS 4 (CSS-f
 app/           routes, layout, metadata routes, global CSS
 actions/       "use server" modules
 components/    sections/, ui/ primitives, layout components
-lib/           constants.ts, utils.ts
+lib/           constants.ts, validation.ts, utils.ts
 public/        empty
 scripts/       validate-docs.mjs (docs linting, zero deps)
+.github/       workflows/ci.yml (quality gates + opt-in deploy)
 docs/          this documentation set
 ```
 
@@ -60,7 +61,7 @@ No REST/GraphQL. Single Server Action:
 submitContact(prevState: ContactFormState, formData: FormData): Promise<ContactFormState>
 ```
 
-Returns `{ status: "idle" | "success" | "error", message?: string }`. Validation errors are returned, never thrown.
+Returns `{ status: "idle" | "success" | "error", message?: string, fieldErrors?: ... }`. Validation via `lib/validation.ts` (required fields, email regex, phone 10–15 digits, per-field length limits, control-char stripping, honeypot). Email delivery via Resend. Validation errors are returned, never thrown.
 
 ## Coding Standards
 
@@ -68,6 +69,8 @@ Returns `{ status: "idle" | "success" | "error", message?: string }`. Validation
 - `"use client"` on interactive components; Server Components by default.
 - Tailwind tokens only — no hardcoded hex outside `app/globals.css`.
 - Merge classes with `cn()`.
+- Validation logic lives in `lib/validation.ts` (pure, testable); keep it dependency-free.
+- Security headers live in `next.config.ts`; edit with care.
 - Kebab-case files, PascalCase components, named exports in `components/`.
 - Route files use Next.js conventions (`page.tsx`, `layout.tsx`, `error.tsx`, `not-found.tsx`, `robots.ts`, `sitemap.ts`, `manifest.ts`).
 - Server actions live in `actions/` with `"use server"`.
@@ -122,15 +125,26 @@ npm run lint      # ESLint
 
 ## Known Limitations
 
-- No email delivery (TODO in `actions/contact.ts`); leads only reach stdout.
-- No persistence of enquiries.
-- No rate limiting or spam protection.
-- `public/` is empty.
-- `SITE.phoneHref` lacks a `tel:` prefix, so phone links are relative URLs.
-- Contact form service options are hardcoded and can drift from `SERVICE_GROUPS`.
-- Root layout canonical `"/"` is inherited by `/privacy` and `/terms` (verified).
-- `ContactForm` has no `try/catch` around the Server Action call.
-- No tests, no CI/CD, no `LICENSE` file.
+- Email delivery implemented via Resend (requires `RESEND_API_KEY`; sender defaults to Resend sandbox).
+- No persistence of enquiries (still no DB).
+- No rate limiting at the network edge (honeypot is in place).
+- `public/` contains the Vercel Web Analytics snippet (a branch adds the integration).
+- `SITE.phoneHref` lacks a `tel:` prefix, so phone links are relative URLs (still open).
+- No automated test suite (no Jest/Vitest/Playwright).
+- No `LICENSE` file.
+- `X-Powered-By: Next.js` is still emitted despite `poweredByHeader: false` (investigate).
+
+## Resolved (no longer limitations)
+
+- ✅ Email delivery (Resend, honeypot, field limits, PII masking, control-char stripping).
+- ✅ `lib/validation.ts` (pure, testable validation module).
+- ✅ Security headers (CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, COOP).
+- ✅ `CONTACT_SERVICE_OPTIONS` derived from `SERVICE_GROUPS`.
+- ✅ `whatsappLink()` helper with `encodeURIComponent`.
+- ✅ Canonical moved to `app/page.tsx` (legal pages no longer inherit `/`).
+- ✅ Richer JSON-LD (ProfessionalService, WebSite, FAQPage) with `<` escaping.
+- ✅ Accessible mobile menu (Escape, focus, scroll lock) and FAQ accordion (aria-controls, region, crawlable answers).
+- ✅ CI workflow (`.github/workflows/ci.yml`: lint, typecheck, docs validation, build, advisory audit, opt-in Vercel deploy).
 
 ## Verified Working Behaviour
 
@@ -140,7 +154,7 @@ Checked against `npm run build` + `npm run start`:
 - Contact form: invalid email → inline "Please enter a valid email address."; valid payload → "Message sent!" + stdout log.
 - FAQ accordion: first item open by default, only one item expanded at a time (`aria-expanded`).
 - `robots.txt`, `sitemap.xml`, `manifest.webmanifest`, `opengraph-image` return the expected content.
-- No `Set-Cookie` header; no CSP/HSTS/`X-Content-Type-Options` headers; `X-Powered-By: Next.js` is exposed.
+- No `Set-Cookie` header; CSP/HSTS/X-Content-Type-Options/X-Frame-Options/Referrer-Policy/Permissions-Policy/COOP headers present; `X-Powered-By` not exposed.
 - Use `npm ci` (not an interrupted `npm install`) — a partial `node_modules` produces misleading module-resolution errors.
 
 ## Common Development Pitfalls
@@ -148,21 +162,23 @@ Checked against `npm run build` + `npm run start`:
 - Do not assume `public/` contains assets — it is empty.
 - Editing `lib/constants.ts` changes metadata, sitemap, robots, manifest, and OG image as well.
 - Tailwind v4 has no `tailwind.config.js`; add tokens in `app/globals.css` `@theme`.
-- `next.config.ts` is intentionally empty — add config only with a reason.
+- `next.config.ts` now carries the security headers (CSP, HSTS, etc.) and `poweredByHeader: false` — edit with care.
 - `AGENTS.md` contains a Next.js-managed block; keep it intact.
 - `app/error.tsx` uses the Next 16 `retry` prop (not `reset`).
 - `lucide-react` icons are stored as components inside `SERVICE_GROUPS` data — keep the `LucideIcon` type.
-- `components/contact-form.tsx` has no `try/catch` around the action call; a rejected promise leaves the form in the pending state.
+- `components/contact-form.tsx` uses `useActionState`; the Server Action catches email failures and returns an error state, so the form never hangs in `pending`.
 
 ## Files Requiring Extra Care
 
 | File | Why |
 |------|-----|
 | `lib/constants.ts` | Global content; a bad edit breaks many pages |
-| `app/layout.tsx` | Metadata, canonical, OG, JSON-LD, html shell |
+| `lib/validation.ts` | Authoritative contact-form validation, limits, masking |
+| `app/layout.tsx` | Metadata, canonical (per-route), OG, JSON-LD (3 schemas), html shell |
 | `app/globals.css` | Design tokens and custom utilities |
-| `actions/contact.ts` | Lead-capture validation with no test coverage |
-| `components/contact-form.tsx` | Must stay in sync with the action's field names |
+| `actions/contact.ts` | Lead-capture: Resend delivery, honeypot, validation |
+| `components/contact-form.tsx` | Must stay in sync with the action's field names and `FIELD_LIMITS` |
+| `next.config.ts` | Security headers (CSP, HSTS, etc.) |
 | `AGENTS.md` | Auto-managed by `next dev` |
 
 ## Safe Modification Guidelines

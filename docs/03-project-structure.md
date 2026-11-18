@@ -57,8 +57,12 @@ CONSULATNCY_WALA/
 │       ├── testimonials.tsx
 │       ├── faq.tsx
 │       └── contact.tsx
+├── .github/
+│   └── workflows/
+│       └── ci.yml             # GitHub Actions: quality gates + opt-in Vercel deploy
 ├── lib/
 │   ├── constants.ts           # Single source of truth for site content
+│   ├── validation.ts          # Contact form validation, sanitising, phone normalisation, PII masking
 │   └── utils.ts               # cn() class-merge helper
 ├── public/                    # Static assets (currently empty)
 ├── scripts/
@@ -70,7 +74,10 @@ CONSULATNCY_WALA/
 
 | Path | Purpose |
 |------|---------|
-| `app/layout.tsx` | Root HTML shell: font, viewport, metadata, icons, Organization JSON-LD |
+| `.github/workflows/ci.yml` | GitHub Actions CI: lint, typecheck, docs validation, build, advisory audit; opt-in Vercel deploy |
+| `PROJECT_CONTEXT.md` | 798-line single-source-of-truth document (overlaps with `docs/`) |
+| `DEPLOYMENT_GUIDE.md` | Step-by-step Vercel + Resend + Hostinger domain setup |
+| `app/layout.tsx` | Root HTML shell: font, viewport, metadata, icons, JSON-LD (3 schemas) |
 | `app/page.tsx` | Composes home page sections |
 | `app/globals.css` | Tailwind v4 import, theme tokens, custom utilities, legal prose styles |
 | `app/robots.ts` | `robots.txt` metadata route |
@@ -83,7 +90,8 @@ CONSULATNCY_WALA/
 | `app/terms/page.tsx` | Terms of Service |
 | `app/icon.svg`, `app/favicon.ico` | Icons referenced by metadata and manifest |
 | `actions/contact.ts` | `submitContact` Server Action + validation |
-| `lib/constants.ts` | SITE, NAV_LINKS, SERVICE_GROUPS, TESTIMONIALS, FAQS, STATS |
+| `lib/constants.ts` | SITE, NAV_LINKS, SERVICE_GROUPS, TESTIMONIALS, FAQS, STATS, CONTACT_SERVICE_OPTIONS, whatsappLink() |
+| `lib/validation.ts` | FIELD_LIMITS, sanitize, isValidPhone, normalizePhone, validateContactInput, maskEmail, maskPhone |
 | `lib/utils.ts` | `cn()` helper |
 | `components/header.tsx` | Fixed navbar, desktop nav, mobile menu, phone + CTA |
 | `components/footer.tsx` | Footer columns, socials, legal links, copyright |

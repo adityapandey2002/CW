@@ -56,17 +56,30 @@ flowchart LR
 
 ## Infrastructure as Code
 
-None in the repository: no `vercel.json`, `Dockerfile`, `docker-compose.yml`, Kubernetes manifests, Terraform, or other IaC. Not verified.
+No `vercel.json`, `Dockerfile`, `docker-compose.yml`, Kubernetes manifests, Terraform, or other IaC. Deployment is configured in the Vercel dashboard (per `DEPLOYMENT_GUIDE.md`).
+
+## Additional Documentation in the Repository
+
+- `PROJECT_CONTEXT.md` — 798-line single-source-of-truth document (overlaps with `docs/01` and `docs/AI_AGENT_CONTEXT.md`).
+- `DEPLOYMENT_GUIDE.md` — step-by-step Vercel + Resend + Hostinger domain setup.
 
 ## CI/CD
 
-No CI configuration exists (no `.github/workflows`, `.gitlab-ci.yml`, etc.). Not verified.
+A GitHub Actions workflow exists at `.github/workflows/ci.yml`:
+
+- Triggers: `push` and `pull_request` to `main`, plus manual `workflow_dispatch`.
+- Job `quality` on `ubuntu-latest`, Node 22, npm cache, 15-minute timeout.
+- Steps: checkout, setup Node, `npm ci`, `npm run lint`, `npx tsc --noEmit`, `node scripts/validate-docs.mjs`, `npm run build` (with `NEXT_PUBLIC_SITE_URL` set), `npm audit --audit-level=high` (advisory, non-blocking).
+- Concurrency cancels superseded runs; `permissions: contents: read` follows least privilege.
+- Job `deploy` (opt-in) runs after `quality` on pushes to `main` when the repository variable `VERCEL_DEPLOY_ENABLED` is `true`. It requires the secrets `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID`, then runs `vercel pull`, `vercel build --prod`, and `vercel deploy --prebuilt --prod`.
+
+See `20-future-improvements.md` for enabling the deploy job and remaining test/rate-limit work.
 
 ## Runtime Requirements
 
-- Node.js runtime supported by Next.js 16 (version not pinned in `package.json`).
+- Node.js runtime supported by Next.js 16 (version not pinned in `package.json`; CI uses Node 22).
 - No database, cache, queue, or object storage provisioning required.
-- No environment secrets other than the optional public site URL.
+- Runtime secrets: `RESEND_API_KEY` (required for email delivery), optional `RESEND_FROM_EMAIL`; `NEXT_PUBLIC_SITE_URL` is build-time.
 
 ## Observability
 

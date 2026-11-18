@@ -109,7 +109,7 @@ No database, ORM, repository layer, or caching layer. Content is static data imp
 | Output | Source | Notes |
 |--------|--------|-------|
 | `<title>`/description/OG/Twitter | `app/layout.tsx` metadata | `metadataBase` from `SITE.url`; title template `%s \| Consultancy Wala` |
-| Canonical | `app/layout.tsx` `alternates.canonical: "/"` | **Verified:** `/privacy` and `/terms` also emit `<link rel="canonical" href="https://consultancywala.com/"/>` — they inherit the root value |
+| Canonical | Per-route metadata: `app/page.tsx` (`/`), `app/privacy/page.tsx` (`/privacy`), `app/terms/page.tsx` (`/terms`) | Root layout intentionally declares none, so legal pages do not inherit `/` |
 | JSON-LD Organization | `app/layout.tsx` inline script | Verified output: name, url, email, telephone, PostalAddress (Patna/Bihar/800026/IN), description |
 | `robots.txt` | `app/robots.ts` | Verified output: `User-Agent: *`, `Allow: /`, `Host: consultancywala.com`, `Sitemap: https://consultancywala.com/sitemap.xml` |
 | `sitemap.xml` | `app/sitemap.ts` | Verified output: 3 URLs (`/`, `/privacy`, `/terms`) with weekly/yearly frequencies and priorities 1 / 0.3 / 0.3 |
@@ -125,14 +125,14 @@ No database, ORM, repository layer, or caching layer. Content is static data imp
 
 ## Logging Strategy
 
-- `console.log` for enquiries (structured object with `receivedAt`).
-- `console.error` for route errors.
-- No log aggregation, redaction, or retention policy in code.
+- `console.log` for enquiries — structured object with PII masked (`maskEmail`, `maskPhone`) and `receivedAt`.
+- `console.error` for email failures and route errors.
+- No log aggregation or retention policy in code.
 
 ## Caching Strategy
 
-- No explicit caching configuration; `next.config.ts` empty.
-- Content is static; pages are eligible for Next.js default caching.
+- Content is static; pages are prerendered and served with a one-year shared-cache lifetime.
+- `next.config.ts` carries security headers, not caching rules.
 - No ISR, revalidation, or `dynamic` exports.
 
 ## Background Jobs / Real-Time
@@ -146,14 +146,27 @@ WhatsApp, Instagram, LinkedIn links; Google Fonts; intended Vercel hosting. See 
 ## Architecture Constraints and Trade-offs
 
 - **Pros:** minimal infrastructure, cheap to host, fast, simple to reason about.
-- **Cons:** no lead persistence, no email delivery, no CMS, no auth, no tests. Content changes require a deploy.
+- **Cons:** no lead persistence, no CMS, no auth, no tests. Content changes require a deploy.
 - **Scalability:** trivial for static traffic; contact submissions are not stored, so no write scaling concerns.
 
 ## Known Architectural Issues
 
-1. **Canonical inheritance (verified):** the root layout sets `alternates.canonical: "/"`, and both `/privacy` and `/terms` render `<link rel="canonical" href="https://consultancywala.com/"/>`. Each legal page should declare its own canonical.
-2. **Phone links are relative URLs:** `SITE.phoneHref` is `"+918601862114"` and is used verbatim as `href`, so browsers resolve it as a path rather than a `tel:` URI.
-3. **Email delivery is a TODO:** leads are only visible in server logs.
+1. **Phone links are relative URLs (verified):** `SITE.phoneHref` is `"+918601862114"` and is used verbatim as `href`, so browsers resolve it as a path rather than a `tel:` URI. Fix: prefix with `tel:`.
+2. **No test suite:** lint + typecheck + build are the only automated quality gates.
+3. **No `LICENSE` file.**
 4. **Dependency hygiene:** `npm audit` reports advisories in the dependency tree; keep Next.js 16 compatibility in mind when updating.
+
+## Resolved by the Remote Revision
+
+The repository has since been revised (origin/main) and now includes:
+- Resend email delivery in `submitContact` (with honeypot, field limits, control-character stripping, PII masking in logs).
+- `lib/validation.ts` — pure, testable validation helpers (`FIELD_LIMITS`, `sanitize`, `isValidPhone`, `normalizePhone`, `maskEmail`, `maskPhone`, `validateContactInput`).
+- Security headers in `next.config.ts`: CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, COOP, plus `poweredByHeader: false`.
+- Canonical moved from the root layout to `app/page.tsx`, so `/privacy` and `/terms` no longer inherit the home canonical.
+- Richer JSON-LD (Organization/ProfessionalService, WebSite, FAQPage) with `<` escaping via `toJsonLd`.
+- Accessible mobile menu (Escape, focus management, scroll lock) and FAQ accordion (aria-controls, role="region", crawlable answers).
+- `CONTACT_SERVICE_OPTIONS` derived from `SERVICE_GROUPS`; `whatsappLink()` helper with `encodeURIComponent`.
+- GitHub Actions CI workflow (lint, typecheck, docs validation, build, advisory audit, opt-in Vercel deploy).
+- `PROJECT_CONTEXT.md` and `DEPLOYMENT_GUIDE.md` (additional, overlapping documentation).
 
 See `diagrams/system-architecture.md` and `diagrams/application-flow.md`.
