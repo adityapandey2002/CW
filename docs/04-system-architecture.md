@@ -146,13 +146,13 @@ WhatsApp, Instagram, LinkedIn links; Google Fonts; intended Vercel hosting. See 
 ## Architecture Constraints and Trade-offs
 
 - **Pros:** minimal infrastructure, cheap to host, fast, simple to reason about.
-- **Cons:** no lead persistence, no CMS, no auth, no tests. Content changes require a deploy.
+- **Cons:** no lead persistence, no CMS, no auth, and test coverage is limited to the validation helpers. Content changes require a deploy.
 - **Scalability:** trivial for static traffic; contact submissions are not stored, so no write scaling concerns.
 
 ## Known Architectural Issues
 
 1. **Phone links are relative URLs (verified):** `SITE.phoneHref` is `"+918601862114"` and is used verbatim as `href`, so browsers resolve it as a path rather than a `tel:` URI. Fix: prefix with `tel:`.
-2. **No test suite:** lint + typecheck + build are the only automated quality gates.
+2. **Limited test coverage:** `lib/validation.ts` has unit tests; there are no component or E2E tests yet.
 3. **No `LICENSE` file.**
 4. **Dependency hygiene:** `npm audit` reports advisories in the dependency tree; keep Next.js 16 compatibility in mind when updating.
 
@@ -166,7 +166,7 @@ The repository has since been revised (origin/main) and now includes:
 - Richer JSON-LD (Organization/ProfessionalService, WebSite, FAQPage) with `<` escaping via `toJsonLd`.
 - Accessible mobile menu (Escape, focus management, scroll lock) and FAQ accordion (aria-controls, role="region", crawlable answers).
 - `CONTACT_SERVICE_OPTIONS` derived from `SERVICE_GROUPS`; `whatsappLink()` helper with `encodeURIComponent`.
-- GitHub Actions CI workflow (lint, typecheck, docs validation, build, advisory audit, opt-in Vercel deploy).
+- GitHub Actions CI workflow (lint, typecheck, unit tests, docs validation, build, advisory audit, opt-in Vercel deploy).
 - `PROJECT_CONTEXT.md` and `DEPLOYMENT_GUIDE.md` (additional, overlapping documentation).
 
 See `diagrams/system-architecture.md` and `diagrams/application-flow.md`.

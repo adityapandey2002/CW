@@ -256,6 +256,6 @@ flowchart TB
 | Accessible mobile menu + FAQ accordion | Implemented | `components/header.tsx`, `components/sections/faq.tsx` |
 | Lead persistence | Not implemented | no DB |
 | Auth/admin | Not implemented | no auth code |
-| Tests | Not implemented | no test files |
+| Tests | Unit tests implemented | `tests/validation.test.ts` (32 Vitest cases) |
 | CMS | Not implemented | hardcoded constants |
 | CI/CD | Implemented | `.github/workflows/ci.yml` (quality gates + opt-in Vercel deploy) |

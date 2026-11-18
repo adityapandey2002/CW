@@ -22,6 +22,7 @@ All entries are derived from `package.json`, `tsconfig.json`, `next.config.ts`, 
 | @types/node | ^20 | dev |
 | @types/react | ^19 | dev |
 | @types/react-dom | ^19 | dev |
+| vitest | ^3.2.7 | dev |
 
 ## Languages
 
@@ -102,11 +103,11 @@ npm — evidenced by `package-lock.json` and `scripts` written for npm. No `pnpm
 
 ## Testing Frameworks
 
-None. No Jest, Vitest, Playwright, Cypress, or Testing Library dependencies.
+**Vitest 3.2.7** — unit tests in `tests/validation.test.ts` (32 cases). Chosen because it runs TypeScript without extra config and works with the existing `@types/node` 20 range. No Playwright, Cypress, Testing Library, or coverage setup yet.
 
 ## CI/CD and Hosting
 
-- **CI/CD:** none configured in the repository.
+- **CI/CD:** GitHub Actions (`.github/workflows/ci.yml`) — lint, typecheck, unit tests, docs validation, build, advisory audit; opt-in Vercel production deploy.
 - **Hosting (intended):** Vercel, per the README (`npx vercel`). No `vercel.json` present. Not verified as the actual production host.
 
 ## Databases, ORMs, Caches, Queues

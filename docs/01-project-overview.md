@@ -36,7 +36,7 @@ Supporting pillars (from `components/sections/about.tsx`): Founder-Led, ROI-Firs
 | Authentication | None |
 | Persistence | None — enquiries are emailed via Resend and logged (masked) to stdout |
 | CMS | None — content is hardcoded in `lib/constants.ts` |
-| Tests | None |
+| Tests | Vitest unit tests for `lib/validation.ts` (32 cases); no component or E2E tests |
 | CI/CD | GitHub Actions (`.github/workflows/ci.yml`) — lint, build, typecheck |
 
 ## Recent Revisions (origin/main)
@@ -49,7 +49,7 @@ The repository has since been revised and now includes:
 - **Richer JSON-LD** (ProfessionalService, WebSite, FAQPage) with `<` escaping via `toJsonLd`.
 - **Accessible mobile menu** (Escape, focus management, scroll lock) and **FAQ accordion** (aria-controls, role="region", crawlable answers).
 - **`CONTACT_SERVICE_OPTIONS`** derived from `SERVICE_GROUPS`; **`whatsappLink()`** helper with `encodeURIComponent`.
-- **GitHub Actions CI** workflow (lint, typecheck, docs validation, build, advisory audit, opt-in Vercel deploy).
+- **GitHub Actions CI** workflow (lint, typecheck, unit tests, docs validation, build, advisory audit, opt-in Vercel deploy).
 - **`PROJECT_CONTEXT.md`** and **`DEPLOYMENT_GUIDE.md`** (additional, overlapping documentation).
 - Email changed to `adityapandey.adu@gmail.com`.
 

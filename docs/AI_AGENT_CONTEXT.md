@@ -12,7 +12,7 @@ Marketing and lead-generation website for **Consultancy Wala**, an e-commerce gr
 - Next.js 16 App Router, React 19, server-rendered by default.
 - All site copy in `lib/constants.ts` (single source of truth).
 - One Server Action: `submitContact` in `actions/contact.ts` — validates (via `lib/validation.ts`), delivers via Resend, logs masked metadata.
-- No database, no auth, no API, no tests, no CI.
+- No database, no auth, no API. Unit tests cover the validation module; CI runs them.
 
 ## Tech Stack
 
@@ -94,7 +94,7 @@ None implemented. The contact action is publicly callable.
 
 ## Testing Procedure
 
-No test suite. Quality gates:
+`tests/validation.test.ts` covers the validation helpers. Quality gates:
 
 ```bash
 npm run lint
@@ -128,11 +128,11 @@ npm run lint      # ESLint
 - Email delivery implemented via Resend (requires `RESEND_API_KEY`; sender defaults to Resend sandbox).
 - No persistence of enquiries (still no DB).
 - No rate limiting at the network edge (honeypot is in place).
-- `public/` contains the Vercel Web Analytics snippet (a branch adds the integration).
-- `SITE.phoneHref` lacks a `tel:` prefix, so phone links are relative URLs (still open).
-- No automated test suite (no Jest/Vitest/Playwright).
+- `public/` is empty.
+- `SITE.phoneHref` is `tel:+918601862114` (phone links are dialable).
+- Unit tests cover `lib/validation.ts`; no component or E2E tests yet.
 - No `LICENSE` file.
-- `X-Powered-By: Next.js` is still emitted despite `poweredByHeader: false` (investigate).
+- `X-Powered-By` is not emitted (`poweredByHeader: false` — verified).
 
 ## Resolved (no longer limitations)
 
@@ -144,7 +144,7 @@ npm run lint      # ESLint
 - ✅ Canonical moved to `app/page.tsx` (legal pages no longer inherit `/`).
 - ✅ Richer JSON-LD (ProfessionalService, WebSite, FAQPage) with `<` escaping.
 - ✅ Accessible mobile menu (Escape, focus, scroll lock) and FAQ accordion (aria-controls, region, crawlable answers).
-- ✅ CI workflow (`.github/workflows/ci.yml`: lint, typecheck, docs validation, build, advisory audit, opt-in Vercel deploy).
+- ✅ CI workflow (`.github/workflows/ci.yml`: lint, typecheck, unit tests, docs validation, build, advisory audit, opt-in Vercel deploy).
 
 ## Verified Working Behaviour
 

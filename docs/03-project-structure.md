@@ -67,6 +67,8 @@ CONSULATNCY_WALA/
 ├── public/                    # Static assets (currently empty)
 ├── scripts/
 │   └── validate-docs.mjs      # Zero-dependency doc validation (links, fences, mermaid)
+├── tests/
+│   └── validation.test.ts     # Vitest unit tests for lib/validation.ts
 └── docs/                      # Documentation (this documentation set)
 ```
 
@@ -74,7 +76,8 @@ CONSULATNCY_WALA/
 
 | Path | Purpose |
 |------|---------|
-| `.github/workflows/ci.yml` | GitHub Actions CI: lint, typecheck, docs validation, build, advisory audit; opt-in Vercel deploy |
+| `.github/workflows/ci.yml` | GitHub Actions CI: lint, typecheck, unit tests, docs validation, build, advisory audit; opt-in Vercel deploy |
+| `tests/validation.test.ts` | Vitest unit tests for validation, limits, phone normalisation and PII masking |
 | `PROJECT_CONTEXT.md` | 798-line single-source-of-truth document (overlaps with `docs/`) |
 | `DEPLOYMENT_GUIDE.md` | Step-by-step Vercel + Resend + Hostinger domain setup |
 | `app/layout.tsx` | Root HTML shell: font, viewport, metadata, icons, JSON-LD (3 schemas) |

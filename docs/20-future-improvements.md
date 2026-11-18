@@ -12,7 +12,7 @@ Most items from the original audit are now implemented:
 | 4 | Rate limiting on the server action | Open — handle at the edge (Vercel/Cloudflare) |
 | 5 | Analytics (privacy-compliant) | Open — a stale Vercel Web Analytics branch exists but is not on `main` |
 | 6 | Security headers (CSP, HSTS) in `next.config.ts` | **Done** |
-| 7 | Test suite (Vitest + Playwright) and CI pipeline | **Partial** — full CI pipeline exists; no automated tests |
+| 7 | Test suite (Vitest + Playwright) and CI pipeline | **Partial** — Vitest unit tests for validation + full CI pipeline; no component/E2E tests |
 | 8 | Admin/CRM portal with authentication | Open |
 | 9 | Image assets in `public/` and `next/image` | Open |
 | 10 | i18n | Open |
@@ -23,11 +23,11 @@ Most items from the original audit are now implemented:
 | 15 | Per-page canonical metadata | **Done** — each route declares its own canonical |
 | 16 | Dialable phone links (`tel:`) | **Done** — `SITE.phoneHref` is `tel:+918601862114` |
 | 17 | Client-side error handling for the contact form | **Done** — Server Action catches failures; `useActionState` clears `pending` |
-| 18 | CI hardening (typecheck, docs, audit, deploy) | **Done** — see `.github/workflows/ci.yml` |
+| 18 | CI hardening (typecheck, docs, tests, audit, deploy) | **Done** — see `.github/workflows/ci.yml` |
 
 ## Still Open (recommended next steps)
 
-1. **Test suite** — add unit tests for `lib/validation.ts` (it is pure and testable) and E2E tests for the contact form.
+1. **Component and E2E tests** — validation is unit-tested; add `ContactForm` state tests and Playwright coverage for navigation, submission, legal pages and 404.
 2. **Rate limiting** at the network edge (Vercel/Cloudflare) in addition to the honeypot.
 3. **CAPTCHA** if spam becomes a problem.
 4. **Persistence** — a database or CRM if enquiries need to be tracked beyond email.

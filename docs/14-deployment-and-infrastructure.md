@@ -69,7 +69,7 @@ A GitHub Actions workflow exists at `.github/workflows/ci.yml`:
 
 - Triggers: `push` and `pull_request` to `main`, plus manual `workflow_dispatch`.
 - Job `quality` on `ubuntu-latest`, Node 22, npm cache, 15-minute timeout.
-- Steps: checkout, setup Node, `npm ci`, `npm run lint`, `npx tsc --noEmit`, `node scripts/validate-docs.mjs`, `npm run build` (with `NEXT_PUBLIC_SITE_URL` set), `npm audit --audit-level=high` (advisory, non-blocking).
+- Steps: checkout, setup Node, `npm ci`, `npm run lint`, `npx tsc --noEmit`, `npm test`, `node scripts/validate-docs.mjs`, `npm run build` (with `NEXT_PUBLIC_SITE_URL` set), `npm audit --audit-level=high` (advisory, non-blocking).
 - Concurrency cancels superseded runs; `permissions: contents: read` follows least privilege.
 - Job `deploy` (opt-in) runs after `quality` on pushes to `main` when the repository variable `VERCEL_DEPLOY_ENABLED` is `true`. It requires the secrets `VERCEL_TOKEN`, `VERCEL_ORG_ID`, and `VERCEL_PROJECT_ID`, then runs `vercel pull`, `vercel build --prod`, and `vercel deploy --prebuilt --prod`.
 

@@ -8,6 +8,7 @@
 | `npm run build` | Production build; includes TypeScript type checking |
 | `npm run start` | Serve the production build |
 | `npm run lint` | Run ESLint (flat config) |
+| `npm test` | Run Vitest unit tests once (`npm test -- --watch` for watch mode) |
 
 There is no `test`, `format`, or `typecheck` script.
 
@@ -74,6 +75,8 @@ All site copy lives in `lib/constants.ts`. Editing it changes the header, footer
 
 ```bash
 npm run lint
+npm test
+npx tsc --noEmit
 npm run build
 ```
 

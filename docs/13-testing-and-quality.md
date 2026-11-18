@@ -2,23 +2,22 @@
 
 ## Test Suite Status
 
-**No automated tests exist in the repository.**
+**Unit tests exist for the pure validation module. There are no component or E2E tests.**
 
-Evidence:
-- `package.json` has no `test` script and no test framework dependencies.
-- No `*.test.*`, `*.spec.*`, or `__tests__/` files.
-- No Playwright/Cypress config.
-- No coverage configuration.
+- `tests/validation.test.ts` — 32 Vitest cases covering `sanitize`, `digitsOnly`, `isValidPhone`, `normalizePhone`, `validateContactInput`, `maskEmail`, and `maskPhone`.
+- Run with `npm test` (add `-- --watch` for watch mode).
+- No Playwright/Cypress config, no component-test setup, and no coverage thresholds yet.
 
 ## Available Quality Gates
 
 | Gate | Command | What It Covers | Verified result |
 |------|---------|----------------|-----------------|
 | ESLint | `npm run lint` | Next.js core-web-vitals + TypeScript rules | **Passes** — no output, exit 0 |
-| TypeScript | `npx tsc --noEmit` | Type checking | **Passes** — exit 0 |
+| TypeScript | `npx tsc --noEmit` | Type checking (including tests) | **Passes** — exit 0 |
+| Unit tests | `npm test` | Validation, limits, phone normalisation, PII masking | **Passes** — 32 tests |
 | Next build | `npm run build` | Production compilation + static generation | **Passes** — 9 routes prerendered as static |
 | Documentation validation | `node scripts/validate-docs.mjs` | Markdown links, code fences, Mermaid structure | **Passes** — 31 files, 69 links, 19 Mermaid blocks |
-| CI | `.github/workflows/ci.yml` | Lint, typecheck, docs validation, build, audit on push/PR to `main` (Node 22); opt-in Vercel deploy job | Configured |
+| CI | `.github/workflows/ci.yml` | Lint, typecheck, unit tests, docs validation, build, audit on push/PR to `main` (Node 22); opt-in Vercel deploy job | Configured |
 
 The verification above was performed with `npm ci` (clean install from `package-lock.json`). An earlier interrupted `npm install` left a partially extracted `node_modules` (missing `.mjs` files while their `.map` siblings were present), which produced misleading `zod/v4`, `lucide-react` typings, and `framer-motion` import errors. Those were environment artifacts, not repository defects; `npm ci` resolves them.
 
@@ -34,7 +33,7 @@ It verifies that every relative Markdown link resolves, code fences are balanced
 
 ## Manual Test Checklist
 
-Because no tests exist, use this checklist after changes. Items marked **[verified]** were confirmed against a running production build during the documentation pass.
+Unit tests cover the validation rules; use this checklist for the UI paths they cannot reach. Items marked **[verified]** were confirmed against a running production build.
 
 - [ ] Home page renders all sections in order: Hero, Services, About, Testimonials, FAQ, Contact.
 - [ ] Desktop nav anchors scroll to correct sections. **[verified: `header nav` exposes `#home`, `#services`, `#about`, `#faq`, `#contact`]**
@@ -51,18 +50,18 @@ Because no tests exist, use this checklist after changes. Items marked **[verifi
 - [ ] `robots.txt`, `sitemap.xml`, manifest, OG image are reachable. **[verified: 200 with expected content types]**
 - [ ] Reduced-motion preference disables animations.
 - [ ] No console errors on page load. **[verified: browser console empty on the home page]**
-- [ ] Response headers reviewed for cache and security policy. **[verified: `Cache-Control: s-maxage=31536000`, `x-nextjs-prerender`, ETag present; no `Set-Cookie`; no CSP/HSTS/`X-Content-Type-Options`; `X-Powered-By: Next.js` exposed]**
+- [ ] Response headers reviewed for cache and security policy. **[verified: `Cache-Control: s-maxage=31536000`, `x-nextjs-prerender`, ETag present; no `Set-Cookie`; CSP/HSTS/X-Content-Type-Options/X-Frame-Options/Referrer-Policy present; no `X-Powered-By`]**
 
 ## Recommended Test Additions (not implemented)
 
-1. **Unit tests** for `submitContact` (Vitest/Jest): required fields, invalid email, success shape.
-2. **Component tests** for `ContactForm` states (idle/pending/success/error).
-3. **E2E tests** (Playwright): navigation, form submission, legal pages, 404.
-4. **Accessibility checks** (axe) for nav, form labels, accordion.
-5. **Link checker** in CI for internal/external links.
-6. **CI workflow** (GitHub Actions) running lint/build/tests.
+1. **Component tests** for `ContactForm` states (idle/pending/success/error).
+2. **E2E tests** (Playwright): navigation, form submission, legal pages, 404.
+3. **Accessibility checks** (axe) for nav, form labels, accordion.
+4. **Link checker** in CI for internal/external links.
+5. **Coverage thresholds** once component tests exist.
+6. **Email integration test** against a mocked Resend client (the live send is not exercised).
 
-These are recommendations only; nothing is implemented.
+Unit tests for the validation rules are implemented in `tests/validation.test.ts`.
 
 ## Dependency Notes
 
