@@ -34,7 +34,7 @@ export const SITE = {
   coFounder: "Aditya Pandey",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://consultancywala.com",
   phone: "+91 8601862114",
-  phoneHref: "+918601862114",
+  phoneHref: "tel:+918601862114",
   whatsappHref: whatsappLink(),
   email: "adityapandey.adu@gmail.com",
   address: "Kumhrar, Patna, Bihar 800026",
