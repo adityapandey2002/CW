@@ -39,6 +39,9 @@ jobs:
       - name: Typecheck
         run: npx tsc --noEmit
 
+      - name: Unit tests
+        run: npm test
+
       - name: Validate documentation
         run: node scripts/validate-docs.mjs
 
