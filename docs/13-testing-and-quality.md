@@ -17,7 +17,7 @@ Evidence:
 | ESLint | `npm run lint` | Next.js core-web-vitals + TypeScript rules | **Passes** — no output, exit 0 |
 | TypeScript | `npx tsc --noEmit` | Type checking | **Passes** — exit 0 |
 | Next build | `npm run build` | Production compilation + static generation | **Passes** — 9 routes prerendered as static |
-| Documentation validation | `node scripts/validate-docs.mjs` | Markdown links, code fences, Mermaid structure | **Passes** — 29 files, 60 links, 15 Mermaid blocks |
+| Documentation validation | `node scripts/validate-docs.mjs` | Markdown links, code fences, Mermaid structure | **Passes** — 31 files, 69 links, 19 Mermaid blocks |
 | CI | `.github/workflows/ci.yml` | Lint, typecheck, docs validation, build, audit on push/PR to `main` (Node 22); opt-in Vercel deploy job | Configured |
 
 The verification above was performed with `npm ci` (clean install from `package-lock.json`). An earlier interrupted `npm install` left a partially extracted `node_modules` (missing `.mjs` files while their `.map` siblings were present), which produced misleading `zod/v4`, `lucide-react` typings, and `framer-motion` import errors. Those were environment artifacts, not repository defects; `npm ci` resolves them.
