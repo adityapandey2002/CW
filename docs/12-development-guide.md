@@ -58,9 +58,11 @@ All site copy lives in `lib/constants.ts`. Editing it changes the header, footer
 
 ## Adding a Form Field
 
-1. Add the field to the payload type and extraction in `actions/contact.ts`.
-2. Add validation if the field is required.
-3. Add the input + `Label` in `components/contact-form.tsx` with matching `name` and `id`.
+1. Add the field to `FIELD_LIMITS` and to `ContactInput` in `lib/validation.ts`.
+2. Add extraction + validation in `validateContactInput`.
+3. Add the field to the payload construction and email body in `actions/contact.ts`.
+4. Add the input + `Label` in `components/contact-form.tsx` with matching `name` and `id`, plus `maxLength={FIELD_LIMITS.<field>}`.
+5. Update `ContactFormState` / `fieldErrors` if field-level errors are needed.
 
 ## Adding a Server Action
 
@@ -80,10 +82,12 @@ npm run build
 | File | Why |
 |------|-----|
 | `lib/constants.ts` | Global content; a bad edit breaks many pages |
-| `app/layout.tsx` | Metadata, SEO, JSON-LD, html/body shell |
+| `lib/validation.ts` | Authoritative contact-form validation, limits, masking — change with care |
+| `app/layout.tsx` | Metadata, SEO, JSON-LD (3 schemas), html/body shell |
 | `app/globals.css` | Design tokens and custom utilities |
-| `actions/contact.ts` | Lead capture validation; no test coverage exists |
-| `components/contact-form.tsx` | Mirrors the action's field names exactly |
+| `actions/contact.ts` | Lead capture: Resend delivery, honeypot, validation |
+| `components/contact-form.tsx` | Mirrors the action's field names and `FIELD_LIMITS` |
+| `next.config.ts` | Security headers (CSP, HSTS, etc.) |
 | `AGENTS.md` | Auto-managed by Next.js — keep the managed block intact |
 
 ## Git Conventions

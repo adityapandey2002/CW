@@ -9,6 +9,7 @@ All entries are derived from `package.json`, `tsconfig.json`, `next.config.ts`, 
 | next | 16.3.5 | runtime |
 | react | 19.2.8 | runtime |
 | react-dom | 19.2.8 | runtime |
+| resend | ^4.0.0 | runtime |
 | clsx | ^2.1.1 | runtime |
 | tailwind-merge | ^3.7.0 | runtime |
 | framer-motion | ^13.3.0 | runtime |
@@ -72,6 +73,13 @@ All entries are derived from `package.json`, `tsconfig.json`, `next.config.ts`, 
 - **Where:** Almost every component; `lib/constants.ts` stores icon components inside `SERVICE_GROUPS` data.
 - **Why relevant:** Icons are stored as component references in data structures (typed as `LucideIcon`), which is why the data file imports React icon components.
 
+### resend ^4.0.0
+
+- **What:** Email delivery SDK.
+- **Where:** `actions/contact.ts` — sends enquiry emails; `lib/validation.ts` is the only other server-side code.
+- **Why relevant:** Replaces the earlier TODO; sends from `RESEND_FROM_EMAIL` (default sandbox sender) to `SITE.email` with the submitter as `replyTo`.
+- **Relationships:** Server Action only; client never sees the API key.
+
 ### next/font/google (Plus Jakarta Sans)
 
 - **What:** Build-time font download and self-hosting with CSS variable output.
@@ -117,7 +125,7 @@ None as libraries. Only `console.log` / `console.error` at runtime.
 
 - WhatsApp (`wa.me`), Instagram, LinkedIn — outbound links.
 - Google Fonts — build-time only.
-- Email provider — **not implemented** (TODO comment only).
+- Resend — email delivery for contact enquiries (requires `RESEND_API_KEY`; sender defaults to the Resend sandbox address).
 
 ## Technology Relationship Summary
 

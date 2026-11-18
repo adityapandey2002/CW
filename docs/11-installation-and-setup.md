@@ -31,9 +31,11 @@ Create `.env.local` in the repo root:
 
 ```bash
 NEXT_PUBLIC_SITE_URL=https://your-domain.com
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxxxxxx
+RESEND_FROM_EMAIL=Consultancy Wala <hello@consultancywala.com>
 ```
 
-If omitted, the site uses `https://consultancywala.com` for metadata/sitemap/robots/manifest. See `10-configuration-and-environment.md`.
+`NEXT_PUBLIC_SITE_URL` defaults to `https://consultancywala.com`. `RESEND_API_KEY` is required for email delivery; without it the contact form still validates and returns a generic error. See `10-configuration-and-environment.md`.
 
 ## 4. Run the Development Server
 

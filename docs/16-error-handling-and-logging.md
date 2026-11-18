@@ -16,7 +16,7 @@ if (!EMAIL_REGEX.test(payload.email)) {
 ```
 
 - Success: `{ status: "success", message: "Thanks! Our team will reach out within 24 hours." }`.
-- Unexpected exceptions inside the action would reject the promise; the client currently has no `try/catch` around `submitContact`, so a rejected action surfaces as an unhandled promise rejection in the browser and the UI stays in the "pending" state. This is a known robustness gap.
+- The action now wraps the Resend call in `try/catch` and returns a generic error state on failure, so the client never sees a rejected promise from the email path. `ContactForm` uses `useActionState`, which handles the pending state automatically.
 
 ### 2. Route Error Boundary (`app/error.tsx`)
 
@@ -38,7 +38,9 @@ No dedicated handling; framework defaults apply.
 
 | Location | Level | Content | Notes |
 |----------|-------|---------|-------|
-| `actions/contact.ts` | `console.log` | Full contact payload + `receivedAt` ISO timestamp | Contains PII; stdout only |
+| `actions/contact.ts` | `console.log` | Masked email (`maskEmail`), masked phone (`maskPhone`), service, `receivedAt` | PII reduced to fingerprints; stdout only |
+| `actions/contact.ts` | `console.warn` | Honeypot trigger | No PII |
+| `actions/contact.ts` | `console.error` | Resend error name/message, or caught exception | No full PII |
 | `app/error.tsx` | `console.error` | Error object | Client-side console |
 
 ## Patterns
@@ -50,9 +52,9 @@ No dedicated handling; framework defaults apply.
 
 - No logging abstraction (e.g., pino/winston/structured JSON logger).
 - No log levels, no request IDs, no correlation IDs.
-- No redaction of email/phone in logs.
+- PII is masked in the enquiry log (`maskEmail`, `maskPhone`).
 - No persistence of enquiries → reliance on host log retention.
 - No error reporting/monitoring service (Sentry, etc.).
 - No alerting for repeated action failures.
 
-Recommended next steps (not implemented): wrap the client call in `try/catch`, add a logger, redact PII, and send failures to an error tracker.
+Recommended next steps: add a logger abstraction, request IDs, and send failures to an error tracker.
