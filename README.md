@@ -34,17 +34,22 @@ Consultancy Wala is a single-page marketing site plus legal pages for an Indian 
 **Core**
 - Responsive, animated marketing site (hero, services, about, testimonials, FAQ, contact).
 - Mobile navigation menu.
-- Contact form with server-side validation (Next.js Server Action).
-- WhatsApp deep links and floating chat bubble.
+- Contact form with server-side validation, honeypot spam trap, field-level limits, and progressive enhancement (React 19 `useActionState`).
+- Email delivery of enquiries via Resend (requires `RESEND_API_KEY`).
+- WhatsApp deep links and floating chat bubble, with a pre-filled follow-up message after submission.
 
 **Technical**
-- SEO: metadata, Open Graph/Twitter cards, JSON-LD Organization schema.
+- SEO: metadata, Open Graph/Twitter cards, JSON-LD (Organization, WebSite, FAQPage) schema.
 - Generated `sitemap.xml`, `robots.txt`, PWA manifest, OG image.
 - Branded 404 and error boundary pages.
 - Legal pages (Privacy Policy, Terms of Service) with shared shell.
+- Accessible mobile menu (Escape to close, focus management, scroll lock) and FAQ accordion (aria-controls, region, crawlable answers).
 
 **Security**
-- Server-side input validation and email format check.
+- CSP, HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy, COOP headers.
+- `poweredByHeader: false`.
+- Server-side validation with control-character stripping and field limits.
+- PII masking in server logs.
 - `rel="noopener noreferrer"` on external links.
 
 ## Technology Stack
@@ -57,10 +62,15 @@ Consultancy Wala is a single-page marketing site plus legal pages for an Indian 
 | Animation | Framer Motion 13 |
 | Icons | lucide-react |
 | Utilities | clsx, tailwind-merge |
+| Email | Resend (`resend ^4.0.0`) |
 | Fonts | Plus Jakarta Sans (next/font/google) |
 | Package manager | npm |
 
 See [docs/02-technology-stack.md](docs/02-technology-stack.md).
+
+## Technology Stack (details)
+
+Additional dependencies vs. the original site: **Resend** (`resend ^4.0.0`) for email delivery, plus a new `lib/validation.ts` module (pure, testable field limits, sanitising, phone normalisation, PII masking).
 
 ## Architecture Overview
 
@@ -83,9 +93,10 @@ Details: [docs/04-system-architecture.md](docs/04-system-architecture.md).
 app/          # Routes, layouts, metadata routes, global styles
 actions/      # Server Actions
 components/   # UI, sections, primitives
-lib/          # constants (content) + utils (cn)
+lib/          # constants (content), validation, utils (cn)
 public/       # Static assets (currently empty)
 scripts/      # Maintenance tooling (docs validation)
+.github/      # CI workflow (quality gates + opt-in Vercel deploy)
 docs/         # Documentation
 ```
 
@@ -102,7 +113,7 @@ Full tree: [docs/03-project-structure.md](docs/03-project-structure.md).
 git clone https://github.com/adityapandey2002/CW.git
 cd CW
 npm install
-# optional: create .env.local with NEXT_PUBLIC_SITE_URL
+# optional: copy .env.example to .env.local and fill in values
 npm run dev
 ```
 
@@ -115,8 +126,10 @@ Database/migrations not applicable. See [docs/11-installation-and-setup.md](docs
 | Variable | Required | Purpose | Default |
 |----------|----------|---------|---------|
 | `NEXT_PUBLIC_SITE_URL` | No | Production URL for sitemap/robots/manifest/metadata | `https://consultancywala.com` |
+| `RESEND_API_KEY` | Yes (for email) | Resend API key used to send enquiries | — |
+| `RESEND_FROM_EMAIL` | No | Verified sender address for enquiry emails | Resend sandbox sender |
 
-Never commit real secrets; `.env*` is gitignored. See [docs/10-configuration-and-environment.md](docs/10-configuration-and-environment.md).
+See [`.env.example`](.env.example). Never commit real secrets; `.env*` is gitignored. See [docs/10-configuration-and-environment.md](docs/10-configuration-and-environment.md).
 
 ## Running the Application
 
@@ -148,6 +161,19 @@ node scripts/validate-docs.mjs  # docs links/fences/Mermaid — passes
 
 See [docs/13-testing-and-quality.md](docs/13-testing-and-quality.md).
 
+## Continuous Integration
+
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on every push and pull request to `main`:
+
+1. `npm ci`
+2. `npm run lint`
+3. `npx tsc --noEmit`
+4. `node scripts/validate-docs.mjs`
+5. `npm run build`
+6. `npm audit --audit-level=high` (advisory, non-blocking)
+
+An opt-in Vercel production deploy job runs after the quality job when `VERCEL_DEPLOY_ENABLED` is set to `true` and the `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` secrets exist. Setup: [docs/14-deployment-and-infrastructure.md](docs/14-deployment-and-infrastructure.md).
+
 ## Deployment
 
 ```bash
@@ -158,13 +184,13 @@ Set `NEXT_PUBLIC_SITE_URL` before deploying. See [docs/14-deployment-and-infrast
 
 ## Known Gaps
 
-Documented, not fixed (this repository's documentation pass made no application changes):
+Remaining items that need human decisions or external services:
 
-- Contact form validates and logs enquiries but **sends no email** (TODO in `actions/contact.ts`).
-- No rate limiting or spam protection on the form.
-- `SITE.phoneHref` is missing the `tel:` scheme, so phone links are relative URLs.
-- The root layout's canonical URL is inherited by `/privacy` and `/terms`.
-- No test suite, no CI/CD, no `LICENSE` file.
+- No automated test suite (no Jest/Vitest/Playwright); lint + typecheck + build are the quality gates.
+- No `LICENSE` file.
+- Email delivery requires `RESEND_API_KEY` (and a verified domain for non-test recipients); configured per environment.
+- No rate limiting at the network edge (honeypot is in place).
+- The Vercel deploy job is opt-in and skipped until its repository variable and secrets are configured.
 
 ## Documentation
 
@@ -220,7 +246,7 @@ Built with Next.js, React, Tailwind CSS, Framer Motion, lucide-react.
 ## Contact and Support
 
 - Phone: +91 8601862114
-- Email: support.consultancywala@gmail.com
+- Email: adityapandey.adu@gmail.com
 - Address: Kumhrar, Patna, Bihar 800026
 - Repository: https://github.com/adityapandey2002/CW
 
