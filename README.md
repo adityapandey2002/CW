@@ -96,6 +96,7 @@ components/   # UI, sections, primitives
 lib/          # constants (content), validation, utils (cn)
 public/       # Static assets (currently empty)
 scripts/      # Maintenance tooling (docs validation)
+tests/        # Vitest unit tests
 .github/      # CI workflow (quality gates + opt-in Vercel deploy)
 docs/         # Documentation
 ```
@@ -150,16 +151,17 @@ None. See [docs/07-database-documentation.md](docs/07-database-documentation.md)
 
 ## Testing
 
-No automated test suite exists. Quality gates:
+Unit tests cover the contact-form validation rules. Quality gates:
 
 ```bash
 npm run lint                     # ESLint — passes
+npm test                         # Vitest — 32 tests pass
 npx tsc --noEmit                 # type check — passes
 npm run build                    # production build — passes (9 static routes)
 node scripts/validate-docs.mjs  # docs links/fences/Mermaid — passes
 ```
 
-See [docs/13-testing-and-quality.md](docs/13-testing-and-quality.md).
+No component or E2E tests yet. See [docs/13-testing-and-quality.md](docs/13-testing-and-quality.md).
 
 ## Continuous Integration
 
@@ -168,9 +170,10 @@ See [docs/13-testing-and-quality.md](docs/13-testing-and-quality.md).
 1. `npm ci`
 2. `npm run lint`
 3. `npx tsc --noEmit`
-4. `node scripts/validate-docs.mjs`
-5. `npm run build`
-6. `npm audit --audit-level=high` (advisory, non-blocking)
+4. `npm test`
+5. `node scripts/validate-docs.mjs`
+6. `npm run build`
+7. `npm audit --audit-level=high` (advisory, non-blocking)
 
 An opt-in Vercel production deploy job runs after the quality job when `VERCEL_DEPLOY_ENABLED` is set to `true` and the `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` secrets exist. Setup: [docs/14-deployment-and-infrastructure.md](docs/14-deployment-and-infrastructure.md).
 
@@ -186,7 +189,7 @@ Set `NEXT_PUBLIC_SITE_URL` before deploying. See [docs/14-deployment-and-infrast
 
 Remaining items that need human decisions or external services:
 
-- No automated test suite (no Jest/Vitest/Playwright); lint + typecheck + build are the quality gates.
+- Test coverage is limited to the validation helpers (no component or E2E tests).
 - No `LICENSE` file.
 - Email delivery requires `RESEND_API_KEY` (and a verified domain for non-test recipients); configured per environment.
 - No rate limiting at the network edge (honeypot is in place).
