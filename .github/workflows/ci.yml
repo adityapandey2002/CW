@@ -52,3 +52,39 @@ jobs:
       - name: Dependency audit (advisory)
         run: npm audit --audit-level=high
         continue-on-error: true
+
+  # Opt-in production deploy. Enable by setting the repository variable
+  # VERCEL_DEPLOY_ENABLED=true and the secrets VERCEL_TOKEN, VERCEL_ORG_ID and
+  # VERCEL_PROJECT_ID. Without them the job is skipped, so forks and fresh
+  # clones stay green.
+  deploy:
+    name: Deploy to Vercel
+    needs: quality
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.VERCEL_DEPLOY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build project artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy prebuilt artifacts
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
