@@ -53,8 +53,8 @@ jobs:
       # Advisories are reported but do not block: dependency bumps need a
       # deliberate Next.js compatibility review rather than an automatic fix.
       - name: Dependency audit (advisory)
-        run: npm audit --audit-level=high
-        continue-on-error: true
+        run: |
+          npm audit --audit-level=high || echo "::warning::npm audit reported advisories; review dependencies before the next release."
 
   # Opt-in production deploy. Enable by setting the repository variable
   # VERCEL_DEPLOY_ENABLED=true and the secrets VERCEL_TOKEN, VERCEL_ORG_ID and
