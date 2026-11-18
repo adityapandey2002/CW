@@ -5,10 +5,20 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
-  lint-and-build:
+  quality:
+    name: Quality gates
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
       - name: Checkout
@@ -17,7 +27,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -26,7 +36,19 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      - name: Validate documentation
+        run: node scripts/validate-docs.mjs
+
       - name: Build
         run: npm run build
         env:
           NEXT_PUBLIC_SITE_URL: https://consultancywala.com
+
+      # Advisories are reported but do not block: dependency bumps need a
+      # deliberate Next.js compatibility review rather than an automatic fix.
+      - name: Dependency audit (advisory)
+        run: npm audit --audit-level=high
+        continue-on-error: true
